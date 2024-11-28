@@ -38,3 +38,27 @@ for deck_file in os.listdir(decks_dir):
     with open(output_file, 'w') as f:
         json.dump(output, f, indent=4)
     
+        # Combine each pair of decks into a new deck file
+        deck_files = [f for f in os.listdir("assets/example_decks") if f.endswith(".json")]
+        for i, deck1 in enumerate(deck_files):
+            for deck2 in deck_files[i+1:]:
+                deck1_name = deck1.replace(".json", "")
+                deck2_name = deck2.replace(".json", "")
+                combined_name = f"{deck1_name}_{deck2_name}.json"
+                
+                deck1_data = json.load(open(Path("assets/example_decks") / deck1))
+                deck2_data = json.load(open(Path("assets/example_decks") / deck2))
+                
+                combined = {
+                    "mainboard": {
+                        card: deck1_data["mainboard"].get(card, 0) + deck2_data["mainboard"].get(card, 0)
+                        for card in set(deck1_data["mainboard"]) | set(deck2_data["mainboard"])
+                    },
+                    "sideboard": {
+                        card: deck1_data["sideboard"].get(card, 0) + deck2_data["sideboard"].get(card, 0)
+                        for card in set(deck1_data["sideboard"]) | set(deck2_data["sideboard"])
+                    }
+                }
+                
+                with open(Path("assets/example_decks") / combined_name, "w") as f:
+                    json.dump(combined, f, indent=4)

@@ -1,5 +1,6 @@
 import game_state
 import database
+import prompts
 
 def format_card_full(card_name:game_state.Card):
     card = database.get_card(card_name)
@@ -44,11 +45,13 @@ def format_battlefield_card(card:game_state.BattlefieldCard):
         battlefield_parts.append(f"Counters: {', '.join(counters)}")
     if card.tapped:
         battlefield_parts.append("Card is tapped")
-    return physical_card_formatted + '\n' + '\n'.join(battlefield_parts)
+    return f"Battlefield ID: {card.battlefield_id}\n" + physical_card_formatted + '\n' + '\n'.join(battlefield_parts)
 
 
 def format_omniscient_view(game_state:game_state.GameState):
     parts = []
+    parts.append(f"Active Player: {game_state.active_player_index}")
+    parts.append(f"Turn Step: {game_state.turn_step.name}\n")
     for player_board in game_state.player_boards:
         parts.append(f"Player {player_board.index}:")
         parts.append(f"Life: {player_board.life}")
@@ -63,7 +66,29 @@ def format_omniscient_view(game_state:game_state.GameState):
             parts.append(format_card_full(card))
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
-        for battlefield_card in player_board.battlefield:
+        for battlefield_card in player_board.battlefield.values():
+            parts.append(format_battlefield_card(battlefield_card))
+    return '\n'.join(parts)
+    
+def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str):
+    parts = []
+    parts.append(f"Active Player: {game_state.active_player_index}")
+    parts.append(f"Turn Step: {game_state.turn_step.name}\n")
+    for player_board in game_state.player_boards:
+        parts.append(f"Player {player_board.index}:")
+        parts.append(f"Life: {player_board.life}")
+        counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
+        if counters:
+            parts.append(f"Player Counters: {', '.join(counters)}")
+        parts.append(f"Number of cards in library: {len(player_board.library)}")
+        
+        parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
+        parts.append("Hand cards full info:")
+        for card in player_board.hand:
+            parts.append(format_card_full(card))
+        parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
+        parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
+        for battlefield_card in player_board.battlefield.values():
             parts.append(format_battlefield_card(battlefield_card))
     return '\n'.join(parts)
     
