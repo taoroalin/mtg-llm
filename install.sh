@@ -1,3 +1,4 @@
+pip install -r requirements.txt
 mkdir assets
 cd assets
 [ ! -f AtomicCards.json ] && wget https://mtgjson.com/api/v5/AtomicCards.json

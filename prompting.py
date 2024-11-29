@@ -50,8 +50,8 @@ def format_battlefield_card(card:game_state.BattlefieldCard):
 
 def format_omniscient_view(game_state:game_state.GameState):
     parts = []
-    parts.append(f"Active Player: {game_state.active_player_index}")
-    parts.append(f"Turn Step: {game_state.turn_step.name}\n")
+    parts.append(f"Player {game_state.active_player_index}'s turn")
+    parts.append(f"Turn Step: {game_state.turn_step.name}")
     for player_board in game_state.player_boards:
         parts.append(f"Player {player_board.index}:")
         parts.append(f"Life: {player_board.life}")
@@ -64,6 +64,7 @@ def format_omniscient_view(game_state:game_state.GameState):
         parts.append("Hand cards full info:")
         for card in player_board.hand:
             parts.append(format_card_full(card))
+        parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
@@ -72,23 +73,27 @@ def format_omniscient_view(game_state:game_state.GameState):
     
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str):
     parts = []
-    parts.append(f"Active Player: {game_state.active_player_index}")
-    parts.append(f"Turn Step: {game_state.turn_step.name}\n")
+    parts.append(f"Player {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
+    parts.append(f"Turn Step: {game_state.turn_step.name}")
     for player_board in game_state.player_boards:
-        parts.append(f"Player {player_board.index}:")
+        parts.append(f"Player {player_board.index}'s board state:" if player_index != player_board.index else "Your board state:")
         parts.append(f"Life: {player_board.life}")
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
         parts.append(f"Number of cards in library: {len(player_board.library)}")
-        
-        parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
-        parts.append("Hand cards full info:")
-        for card in player_board.hand:
-            parts.append(format_card_full(card))
+        if player_index == player_board.index:
+            parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
+            parts.append("Hand cards full info:")
+            for card in player_board.hand:
+                parts.append(format_card_full(card))
+        else:
+            parts.append(f"Player has ({len(player_board.hand)}) cards in hand")
+        parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
             parts.append(format_battlefield_card(battlefield_card))
+        parts.append(f"Current revealed information (eg scrying): {revealed_information}")
     return '\n'.join(parts)
     

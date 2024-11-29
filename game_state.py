@@ -24,8 +24,8 @@ class TurnStep(Enum):
 
 class DeckList(BaseModel):
     "Decklist for a player at the beginning of the game"
-    library: list[Card]
-    sideboard: list[Card]
+    mainboard: dict[Card, int]
+    sideboard: dict[Card, int]
     
 class BattlefieldCard(BaseModel):
     "A card on the battlefield. Has an ID which other cards can reference."
@@ -56,11 +56,11 @@ class PlayerBoard(BaseModel):
     "The entire state of a player, including their hand, battlefield, counters and tokens, graveyard, etc."
     library: list[Card]
     hand: list[Card]
-    graveyard: list[Card]
-    exile: list[Card]
-    life: int
-    counters: dict[str, int]
-    battlefield: dict[int, BattlefieldCard]
+    graveyard: list[Card] = Field(default_factory=list)
+    exile: list[Card] = Field(default_factory=list)
+    life: int = Field(default=20)
+    counters: dict[str, int] = Field(default_factory=dict)
+    battlefield: dict[int, BattlefieldCard] = Field(default_factory=dict)
     
     def untap_all(self):
         for battlefield_card in self.battlefield.values():
@@ -77,7 +77,14 @@ class PlayerBoard(BaseModel):
             battlefield_card = self.battlefield[battlefield_id]
             self.exile.append(battlefield_card.card)
             del self.battlefield[battlefield_id]
-
+            
+    @classmethod
+    def init_from_decklist(cls, decklist: DeckList):
+        initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
+        random.shuffle(initial_library)
+        initial_library, initial_hand = initial_library[:7], initial_library[7:]
+        self = cls(library=initial_library, hand=initial_hand)
+        return self
 
 class GameState(BaseModel):
     player_decklists: list[DeckList]
@@ -115,4 +122,8 @@ class GameState(BaseModel):
             battlefield_card.marked_damage += damage
             if battlefield_card.marked_damage >= battlefield_card.toughness:
                 self.player_boards[player_index].battlefield_to_graveyard([battlefield_id])
-                
+                    
+    @classmethod
+    def init_from_decklists(cls, decklists: list[DeckList]):
+        self = cls(player_decklists=decklists, player_boards=[PlayerBoard.init_from_decklist(decklist) for decklist in decklists])
+        return self

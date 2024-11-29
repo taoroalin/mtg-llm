@@ -90,25 +90,6 @@ game_phase_guide = """# Magic: The Gathering Turn Structure
 - Make sure to announce important phase changes to avoid confusion
 """
 
-def make_game_master_prompt(game_state):
-    return """You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players with a Python API.
-
-Game Phase reminder:
-{game_phase_guide}
-
-Current Game State:
-{omniscient_view}
-
-
-Please advance the game by:
-1. Identifying the current phase/step
-2. Executing any automatic game actions for this step (like untapping or drawing)
-3. Describing what actions are available to players
-4. Waiting for player actions before proceeding
-5. Moving to the next phase/step when all players pass priority with an empty stack
-
-Keep the game moving according to proper MTG rules and timing."""
-
 TURN_GUIDE = """
 Beginning Phase:
 1. Untap - Untap all permanents, no priority
