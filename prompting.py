@@ -52,8 +52,8 @@ def format_omniscient_view(game_state:game_state.GameState):
     parts = []
     parts.append(f"Player {game_state.active_player_index}'s turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
-    for player_board in game_state.player_boards:
-        parts.append(f"Player {player_board.index}:")
+    for i, player_board in enumerate(game_state.player_boards):
+        parts.append(f"Player {i}:")
         parts.append(f"Life: {player_board.life}")
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
@@ -73,6 +73,7 @@ def format_omniscient_view(game_state:game_state.GameState):
     
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str):
     parts = []
+    parts.append(f"You are player {player_index}")
     parts.append(f"Player {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
     for player_board in game_state.player_boards:

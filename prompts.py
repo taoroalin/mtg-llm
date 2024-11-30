@@ -117,4 +117,4 @@ Ending Phase:
 1. End Step - End of turn triggers
 2. Cleanup - Discard to 7, remove damage, end turn effects"""
 
-comprehensive_rules = open("comprehensive_rules.txt").read()
+comprehensive_rules = open("assets/MagicCompRules.txt").read()
