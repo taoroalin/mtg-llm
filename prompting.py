@@ -1,25 +1,38 @@
 import game_state
 import prompts
+import re
 
-def format_card_full(card_name:game_state.Card):
+def simplify_mana_cost_fn(mana_cost:str):
+    return re.sub(r'[{}]', '', mana_cost)
+
+def format_card_full(card_name:game_state.Card, simplify_basic_lands:bool=False, simplify_mana_cost:bool=True, omit_all_reminder_text:bool=True):
     card = game_state.get_card_info(card_name)
     parts = []
     parts.append(f"Name: {card['name']}")
+    if simplify_basic_lands and 'supertypes' in card and 'Basic' in card['supertypes']:
+        return "\n".join(parts)
     
     if 'manaCost' in card:
-        parts.append(f"Cost: {card['manaCost']}")
+        if simplify_mana_cost:
+            mana_cost = simplify_mana_cost_fn(card['manaCost'])
+        else:
+            mana_cost = card['manaCost']
+        parts.append(f"Cost: {mana_cost}")
     
     type_line = []
-    if 'supertypes' in card:
+    if 'supertypes' in card and card['supertypes']:
         type_line.extend(card['supertypes'])
     if 'types' in card:
         type_line.extend(card['types']) 
-    if 'subtypes' in card:
+    if 'subtypes' in card and card['subtypes']:
         type_line.extend(['-'] + card['subtypes'])
     parts.append(f"Type: {' '.join(type_line)}")
     
     if 'text' in card:
-        parts.append(f"Rules Text: {card['text']}")
+        text = card['text']
+        if omit_all_reminder_text:
+            text = re.sub(r'\([^)]*\)', '', text)
+        parts.append(f"Rules Text: {text}")
         
     stats = []
     if 'power' in card and 'toughness' in card:
@@ -31,8 +44,8 @@ def format_card_full(card_name:game_state.Card):
         
     return '\n'.join(parts)
     
-def format_battlefield_card(card:game_state.BattlefieldCard):
-    physical_card_formatted = format_card_full(card.card)
+def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_lands:bool=False):
+    physical_card_formatted = format_card_full(card.card, simplify_basic_lands)
     
     battlefield_parts = []
     if card.marked_damage > 0:
@@ -47,7 +60,7 @@ def format_battlefield_card(card:game_state.BattlefieldCard):
     return f"Battlefield ID: {card.battlefield_id}\n" + physical_card_formatted + '\n' + '\n'.join(battlefield_parts)
 
 
-def format_omniscient_view(game_state:game_state.GameState):
+def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands:bool=True):
     parts = []
     parts.append(f"Player {game_state.active_player_index}'s turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
@@ -62,15 +75,16 @@ def format_omniscient_view(game_state:game_state.GameState):
         parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
         parts.append("Hand cards full info:")
         for card in player_board.hand:
-            parts.append(format_card_full(card))
+            parts.append(format_card_full(card, simplify_basic_lands))
+            parts.append("")
         parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
-            parts.append(format_battlefield_card(battlefield_card))
+            parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
     return '\n'.join(parts)
     
-def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str):
+def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str, simplify_basic_lands:bool=True):
     parts = []
     parts.append(f"You are player {player_index}")
     parts.append(f"Player {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
@@ -86,14 +100,15 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
             parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
             parts.append("Hand cards full info:")
             for card in player_board.hand:
-                parts.append(format_card_full(card))
+                parts.append(format_card_full(card, simplify_basic_lands))
+                parts.append("")
         else:
             parts.append(f"Player has ({len(player_board.hand)}) cards in hand")
         parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
-            parts.append(format_battlefield_card(battlefield_card))
+            parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
         parts.append(f"Current revealed information (eg scrying): {revealed_information}")
     return '\n'.join(parts)
     

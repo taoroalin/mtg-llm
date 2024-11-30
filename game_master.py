@@ -42,6 +42,8 @@ class GameMaster(BaseModel):
             if self.winner is not None:
                 return self.winner
             self.player_action = self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
+            print(prompting.format_omniscient_view(self.game_state))
+            print(f"Player {self.priority_player} action: {self.player_action}")
         return self.winner
             
     def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):

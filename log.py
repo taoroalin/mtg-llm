@@ -6,6 +6,8 @@ os.makedirs(f"{logging_dir}/generations", exist_ok=True)
 
 client = openai.Client()
 
+prices = {"gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}}
+
 total_input_tokens = 0
 total_output_tokens = 0
 def llm_generate( **kwargs):
@@ -33,12 +35,12 @@ def llm_generate( **kwargs):
         with open(usage_path) as f:
             usage = json.load(f)
     except FileNotFoundError:
-        usage = {"input": 0, "output": 0, "total": 0}
+        usage = {"input": 0, "output": 0, "total": 0, "cost": 0}
         
     usage["input"] += response.usage.prompt_tokens
     usage["output"] += response.usage.completion_tokens
     usage["total"] = usage["input"] + usage["output"]
-    
+    usage["cost"] += response.usage.prompt_tokens * prices[kwargs["model"]]["input"] + response.usage.completion_tokens * prices[kwargs["model"]]["output"]
     with open(usage_path, "w") as f:
         json.dump(usage, f)
     return response
