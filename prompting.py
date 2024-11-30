@@ -70,14 +70,14 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
-        
-        parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
+        hand = player_board.get_hand_sorted()
+        parts.append(f"Hand ({len(hand)}) cards: {', '.join(hand)}")
         parts.append("Hand cards full info:")
-        for card in player_board.hand:
+        for card in hand:
             parts.append(format_card_full(card, simplify_basic_lands))
             parts.append("")
-        parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
-        for battlefield_card in player_board.battlefield.values():
+        parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:" if player_board.battlefield else "Battlefield empty")
+        for battlefield_card in player_board.battlefield_sorted:
             parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
             parts.append("")
         parts.append(f"Library has {len(player_board.library)} cards")
@@ -95,16 +95,17 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
+        hand = player_board.get_hand_sorted()
         if player_index == index:
-            parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
+            parts.append(f"Hand ({len(hand)}) cards: {', '.join(hand)}")
             parts.append("Hand cards full info:")
-            for card in player_board.hand:
+            for card in hand:
                 parts.append(format_card_full(card, simplify_basic_lands))
                 parts.append("")
         else:
             parts.append(f"Player has ({len(player_board.hand)}) cards in hand")
-        parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
-        for battlefield_card in player_board.battlefield.values():
+        parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:" if player_board.battlefield else "Battlefield empty")
+        for battlefield_card in player_board.battlefield_sorted:
             parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
             parts.append("")
         parts.append(f"Library has {len(player_board.library)} cards")

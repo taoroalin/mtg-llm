@@ -99,7 +99,11 @@ class BattlefieldCard(BaseModel):
 class PlayerBoard(BaseModel):
     "The entire state of a player, including their hand, battlefield, counters and tokens, graveyard, etc."
     library: list[Card]
-    hand: list[Card]
+    hand: list[Card] = Field(default_factory=list, description="Cards in hand. Note that cards are displayed in mana value order but stored unsorted.")
+    
+    def get_hand_sorted(self) -> list[Card]:
+        return sorted(self.hand, key=lambda card: get_card_info(card)["manaValue"])
+        
     graveyard: list[Card] = Field(default_factory=list)
     exile: list[Card] = Field(default_factory=list)
     life: int = Field(default=20)
@@ -129,6 +133,10 @@ class PlayerBoard(BaseModel):
         initial_library, initial_hand = initial_library[7:], initial_library[:7]
         self = cls(library=initial_library, hand=initial_hand)
         return self
+        
+    @property
+    def battlefield_sorted(self) -> list[BattlefieldCard]:
+        return sorted(self.battlefield.values(), key=lambda card: get_card_info(card.card)["manaValue"])
 
 class GameState(BaseModel):
     player_decklists: list[DeckList]

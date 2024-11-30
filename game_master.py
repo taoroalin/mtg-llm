@@ -27,6 +27,7 @@ class GameMaster(BaseModel):
     game_state: game_state.GameState
     agents: list["AgentInterface"]
     generation_settings: dict
+    step_callback: Optional[Callable[[], None]] = Field(default=None)
     past_game_states: list[game_state.GameState] = Field(default_factory=list)
     player_observation_histories: list[list[HistoryStep]] = Field(default_factory=list)
     priority_player: int = Field(default=0)
@@ -36,6 +37,7 @@ class GameMaster(BaseModel):
     priority_player_revealed_information: str = Field(default="")
     priority_player_available_actions: str = Field(default="")
     
+    
     def truncated_json(self, **kwargs) -> str:
         game_master_copy = deepcopy(self)
         game_master_copy.past_game_states = game_master_copy.past_game_states[-5:]
@@ -43,17 +45,18 @@ class GameMaster(BaseModel):
             history[:] = history[-5:]
         return super().model_dump_json(**kwargs)
         
+    def step(self):
+        self.past_game_states.append(deepcopy(self.game_state))
+        self.game_master_step(self.player_action)
+        if self.winner is not None:
+            return self.winner
+        self.player_action = self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
+        print(prompting.format_omniscient_view(self.game_state))
+        print(f"Player {self.priority_player} action: {self.player_action}")
+        
     def game_loop(self):
         while self.winner is None:
-            self.past_game_states.append(deepcopy(self.game_state))
-            self.step(self.player_action)
-            if self.winner is not None:
-                return self.winner
-            self.player_action = self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
-            print(prompting.format_omniscient_view(self.game_state))
-            print(f"Player {self.priority_player} action: {self.player_action}")
-            asyncio.create_task(self.broadcast_state())  # Add at end of method
-
+            self.step()
         return self.winner
             
     def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
@@ -207,7 +210,7 @@ class GameMaster(BaseModel):
         result = json.loads(response.choices[0].message.function_call.arguments)
         return result
         
-    def step(self, action: str):
+    def game_master_step(self, action: str):
         if action != "":
             is_action_valid, invalid_action_feedback = self.execute_action(action)
             if not is_action_valid:
