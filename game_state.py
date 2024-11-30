@@ -1,11 +1,55 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Literal, Union
+from typing import Optional, Literal, Union, TypedDict, List
 import random
 from enum import Enum, auto
+import json
+from pathlib import Path
 
 Card = str  # Type alias
 
 CardOrToken = Card
+
+class CardInfo(TypedDict, total=False):
+    name: str
+    manaCost: str 
+    manaValue: int
+    
+    colors: List[str]
+    colorIdentity: List[str]
+    types: List[str]
+    subtypes: List[str]
+    supertypes: List[str]
+    # power and toughness are sometimes strings
+    power: Optional[Union[int, str]]
+    toughness: Optional[Union[int, str]]
+    loyalty: Optional[Union[int, str]]
+    
+    text: str
+    
+    number: str
+    isToken: bool
+    
+def get_card_info(name:str) -> CardInfo:
+    return card_database['data'][name]
+
+card_database = json.load(Path("assets/AtomicCardsGameplay.json").open())
+
+def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:Optional[int]=None, toughness:Optional[int]=None, text:str='') -> CardInfo:
+    assert name not in card_database['data'], f"Card {name} already exists"
+    new_card_info: CardInfo = {
+        "name": name,
+        "manaCost": "",
+        "manaValue": 0,
+        "types": types,
+        "subtypes": subtypes,
+        "power": power,
+        "toughness": toughness,
+        "text": text,
+        "isToken": True
+    }
+    card_database['data'][name] = new_card_info
+    return new_card_info
+
 
 class TurnStep(Enum):
     UNTAP = auto()
@@ -82,7 +126,7 @@ class PlayerBoard(BaseModel):
     def init_from_decklist(cls, decklist: DeckList):
         initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
         random.shuffle(initial_library)
-        initial_library, initial_hand = initial_library[:7], initial_library[7:]
+        initial_library, initial_hand = initial_library[7:], initial_library[:7]
         self = cls(library=initial_library, hand=initial_hand)
         return self
 
@@ -108,7 +152,7 @@ class GameState(BaseModel):
             self.player_boards[player_index].hand.append(self.player_boards[player_index].library.pop())
             
     def add_card_to_battlefield(self,player_index: int, card: CardOrToken):
-        battlefield_card = BattlefieldCard.from_card(card, player_index, self.last_battlefield_id)
+        battlefield_card = BattlefieldCard.from_card(card, player_index, self.next_battlefield_id)
         self.player_boards[player_index].battlefield[self.next_battlefield_id] = battlefield_card
         self.next_battlefield_id += 1
             

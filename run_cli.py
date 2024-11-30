@@ -14,7 +14,7 @@ if __name__ == "__main__":
     with open("assets/example_decks/Cats_Elves.json") as f:
         deck_2 = DeckList.model_validate_json(f.read())
     game_state = GameState.init_from_decklists([deck_1, deck_2])
-    print(game_state)
+    print(game_state.model_dump_json(indent=2))
     agents = [NaiveAgent(generation_settings=generation_settings), NaiveAgent(generation_settings=generation_settings)]
     game_master = GameMaster(game_state=game_state, agents=agents, generation_settings=generation_settings)
     winner = game_master.game_loop()

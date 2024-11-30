@@ -1,9 +1,8 @@
 import game_state
-import database
 import prompts
 
 def format_card_full(card_name:game_state.Card):
-    card = database.get_card(card_name)
+    card = game_state.get_card_info(card_name)
     parts = []
     parts.append(f"Name: {card['name']}")
     
@@ -76,14 +75,14 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
     parts.append(f"You are player {player_index}")
     parts.append(f"Player {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
-    for player_board in game_state.player_boards:
-        parts.append(f"Player {player_board.index}'s board state:" if player_index != player_board.index else "Your board state:")
+    for index, player_board in enumerate(game_state.player_boards):
+        parts.append(f"Player {index}'s board state:" if player_index != index else "Your board state:")
         parts.append(f"Life: {player_board.life}")
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
         parts.append(f"Number of cards in library: {len(player_board.library)}")
-        if player_index == player_board.index:
+        if player_index == index:
             parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
             parts.append("Hand cards full info:")
             for card in player_board.hand:
