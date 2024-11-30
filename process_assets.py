@@ -8,8 +8,11 @@ def extract_gameplay_info(card):
     relevant_fields = [
         'name', 'manaCost', 'manaValue', 'colors', 'colorIdentity',
         'types', 'subtypes', 'supertypes',
-        'power', 'toughness', 'loyalty', 'text', 'number'
+        'power', 'toughness', 'loyalty', 'text', 'number', 'legalities'
     ]
+    legalities_to_keep = ['commander', 'modern', 'standard', 'pauper', 'pioneer']
+    if card['legalities']:
+        card['legalities'] = [key for key in legalities_to_keep if key in card['legalities'] and card['legalities'][key] == 'Legal']
     return {key: card[key] for key in relevant_fields if key in card}
 
 atomic_cards_file = Path("assets/AtomicCards.json")

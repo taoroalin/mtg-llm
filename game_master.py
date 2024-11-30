@@ -18,7 +18,7 @@ class HistoryStep(BaseModel):
     
 class AgentInterface(BaseModel):
 
-    def take_action(self, history:list["HistoryStep"], visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
+    async def take_action(self, history:list["HistoryStep"], visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
         pass
         return ""
 
@@ -45,29 +45,29 @@ class GameMaster(BaseModel):
             history[:] = history[-5:]
         return super().model_dump_json(**kwargs)
         
-    def step(self):
+    async def step(self):
         self.past_game_states.append(deepcopy(self.game_state))
-        self.game_master_step(self.player_action)
+        await self.game_master_step(self.player_action)
         if self.winner is not None:
             return self.winner
-        self.player_action = self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
+        self.player_action = await self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
         print(prompting.format_omniscient_view(self.game_state))
         print(f"Player {self.priority_player} action: {self.player_action}")
         
-    def game_loop(self):
+    async def game_loop(self):
         while self.winner is None:
-            self.step()
+            await self.step()
         return self.winner
             
-    def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
+    async def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
         if len(self.player_observation_histories) <= len(self.agents):
             self.player_observation_histories = [[] for _ in self.agents]
         player_view = prompting.format_player_view(self.game_state, player_index, revealed_information)
-        player_action = self.agents[player_index].take_action(self.player_observation_histories[player_index],player_view, available_actions, invalid_action_feedback)
+        player_action = await self.agents[player_index].take_action(self.player_observation_histories[player_index],player_view, available_actions, invalid_action_feedback)
         self.player_observation_histories[player_index].append(HistoryStep(visible_information=player_view, action=player_action, available_actions=available_actions))
         return player_action
         
-    def execute_action(self, action: str):
+    async def execute_action(self, action: str):
         execute_action_messages = self.get_base_messages()
         execute_action_messages.append({"role":"user", "content":f"Player validate whether the action player {self.priority_player} wants to take is valid. If it is, advance the game state according to the action.\nAction: {action}"})
         execute_action_tools = {"functions":[
@@ -100,7 +100,7 @@ class GameMaster(BaseModel):
         "function_call":{"name": "advance_game_state"}}
         execution_success = False
         while True:
-            response = log.llm_generate(
+            response = await log.llm_generate(
                 messages=execute_action_messages,
                 **self.generation_settings,
                 **execute_action_tools
@@ -109,13 +109,13 @@ class GameMaster(BaseModel):
             arguments = json.loads(response.choices[0].message.function_call.arguments)
             if not arguments["is_action_valid"]:
                 return False, arguments["invalid_action_feedback"]
-            execution_success, execution_output = self.execute_code_with_game_state(arguments["python_code"])
+            execution_success, execution_output = await self.execute_code_with_game_state(arguments["python_code"])
             if execution_success:
                 return True, ""
             else:
                 execute_action_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {execution_output}"})
                 
-    def advance_game_to_next_priority(self):
+    async def advance_game_to_next_priority(self):
         advance_game_state_messages = self.get_base_messages()
     
         advance_state_tools = {"functions":[
@@ -146,7 +146,7 @@ class GameMaster(BaseModel):
         advance_game_state_messages.append({"role":"user", "content":"Please identify the next time an player will get priority and be able to take an action, and advance the game to that point. Advancing the game state involves setting the active_player and turn_step properties of game_state, as well as untapping permanents, drawing cards, clearing damage, resolving any triggered abilities that do not involve player choices, etc. Please skip over multiple steps if no players will have available actions, eg executing untap, upkeep, and draw steps and skipping to main phase if no player has instant speed actions available."})
         execution_success = False
         while True:
-            response = log.llm_generate(
+            response = await log.llm_generate(
             messages=advance_game_state_messages,
             **self.generation_settings,
             **advance_state_tools
@@ -154,14 +154,14 @@ class GameMaster(BaseModel):
             
             result = json.loads(response.choices[0].message.function_call.arguments)
             self.priority_player = result["priority_player"]
-            execution_success, execution_output = self.execute_code_with_game_state(result["python_code"])
+            execution_success, execution_output = await self.execute_code_with_game_state(result["python_code"])
             if execution_success:
                 break
             else:
                 advance_game_state_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {execution_output}"})
         return result
         
-    def analyze_state_at_priority(self):
+    async def analyze_state_at_priority(self):
         analyze_state_messages = self.get_base_messages()
         analyze_state_messages.append({"role":"user", "content":"Please analyze the current game state and describe what actions are available to the player who currently has priority."})
         
@@ -201,7 +201,7 @@ class GameMaster(BaseModel):
                 }
             }],
             "function_call":{"name": "extract_state_info"}}
-        response = log.llm_generate(
+        response = await log.llm_generate(
             messages=analyze_state_messages,
             **self.generation_settings,
             **analyze_state_tools
@@ -210,13 +210,13 @@ class GameMaster(BaseModel):
         result = json.loads(response.choices[0].message.function_call.arguments)
         return result
         
-    def game_master_step(self, action: str):
+    async def game_master_step(self, action: str):
         if action != "":
-            is_action_valid, invalid_action_feedback = self.execute_action(action)
+            is_action_valid, invalid_action_feedback = await self.execute_action(action)
             if not is_action_valid:
                 self.invalid_action_feedback = invalid_action_feedback
-        self.advance_game_to_next_priority()
-        analyzed_state = self.analyze_state_at_priority()
+        await self.advance_game_to_next_priority()
+        analyzed_state = await self.analyze_state_at_priority()
         if analyzed_state.get("winner") is not None:
             self.winner = analyzed_state["winner"]
         self.priority_player = analyzed_state["priority_player"]
@@ -237,7 +237,7 @@ Current Game State:
 {omniscient_view}"""}]
         return messages
         
-    def execute_code_with_game_state(self, code: str) -> tuple[bool, str]:
+    async def execute_code_with_game_state(self, code: str) -> tuple[bool, str]:
 
         f = io.StringIO()
         previous_game_state = deepcopy(self.game_state)

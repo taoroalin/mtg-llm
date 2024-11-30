@@ -62,6 +62,7 @@ def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_land
 
 def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands:bool=True):
     parts = []
+    parts.append(f"Turn Number: {game_state.turn_number}")
     parts.append(f"Player {game_state.active_player_index}'s turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
     for i, player_board in enumerate(game_state.player_boards):
@@ -82,10 +83,13 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
             parts.append("")
         parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
+        if player_board.exile:
+            parts.append(f"Exile ({len(player_board.exile)}) cards: {', '.join(player_board.exile)}")
     return '\n'.join(parts)
     
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str, simplify_basic_lands:bool=True):
     parts = []
+    parts.append(f"Turn Number: {game_state.turn_number}")
     parts.append(f"You are player {player_index}")
     parts.append(f"Opponent {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
@@ -110,6 +114,8 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
             parts.append("")
         parts.append(f"Library has {len(player_board.library)} cards")
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
+        if player_board.exile:
+            parts.append(f"Exile ({len(player_board.exile)}) cards: {', '.join(player_board.exile)}")
         parts.append(f"Current revealed information (eg scrying): {revealed_information}")
     return '\n'.join(parts)
     

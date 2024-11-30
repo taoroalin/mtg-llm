@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { PlayerBoard } from './components/PlayerBoard';
-import { GameState } from './types';
+import { GameMaster } from './types';
 import { useState, useEffect } from 'react';
 
 const Container = styled.div`
@@ -15,31 +15,36 @@ const GameInfo = styled.div`
 `;
 
 function App() {
-  // This would be replaced with your actual game state
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [gameMaster, setGameMaster] = useState<GameMaster | null>(null); // Changed from GameState to any
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8000/ws');
-    
-    ws.onmessage = (event) => {
-      const newState = JSON.parse(event.data);
-      setGameState(newState);
+    const createGame = async () => {
+      const response = await fetch('http://localhost:8000/create_game', { method: 'POST' });
+      const { game_id } = await response.json();
+      const ws = new WebSocket(`ws://localhost:8000/ws/${game_id}`);
+      
+      ws.onmessage = (event) => {
+        const newGameMaster = JSON.parse(event.data); // Changed to accept gamemaster
+        setGameMaster(newGameMaster);
+      };
+
+      return () => ws.close();
     };
 
-    return () => ws.close();
+    createGame();
   }, []);
 
-  if (!gameState) return <div>Loading...</div>;
+  if (!gameMaster) return <div>Loading...</div>;
 
   return (
     <Container>
       <GameInfo>
-        <h1>MTG Game State</h1>
-        <p>Active Player: {gameState.active_player_index + 1}</p>
-        <p>Turn Step: {gameState.turn_step}</p>
+        <h1>MTG Game Master</h1>
+        <p>Active Player: {gameMaster.game_state.active_player_index + 1}</p>
+        <p>Turn Step: {gameMaster.game_state.turn_step}</p>
       </GameInfo>
 
-      {gameState.player_boards.map((board, i) => (
+      {gameMaster.game_state.player_boards.map((board, i) => (
         <PlayerBoard key={i} board={board} playerIndex={i} />
       ))}
     </Container>

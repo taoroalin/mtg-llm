@@ -9,6 +9,13 @@ Card = str  # Type alias
 
 CardOrToken = Card
 
+class Format(Enum):
+    COMMANDER = auto()
+    MODERN = auto()
+    STANDARD = auto()
+    PAUPER = auto()
+    PIONEER = auto()
+
 class CardInfo(TypedDict, total=False):
     name: str
     manaCost: str 
@@ -27,6 +34,7 @@ class CardInfo(TypedDict, total=False):
     text: str
     
     number: str
+    legalities:Optional[list[Format]]
     isToken: bool
     
 def get_card_info(name:str) -> CardInfo:
@@ -146,6 +154,7 @@ class GameState(BaseModel):
     next_battlefield_id: int = Field(default=0)
     active_player_index: int = Field(default=0)
     turn_step: TurnStep = Field(default=TurnStep.UNTAP)
+    turn_number: int = Field(default=1, description="The number of the current turn, starting from 1. Each player taking a turn is 1 turn.")
     
     def cleanup_damage(self):
         for player_board in self.player_boards:

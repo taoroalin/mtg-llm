@@ -7,7 +7,7 @@ import log
 class NaiveAgent(game_master.AgentInterface):
     generation_settings:dict
 
-    def take_action(self,history:list[game_master.HistoryStep],visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
+    async def take_action(self,history:list[game_master.HistoryStep],visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
         messages = [{"role":"system", "content":"You are an expert Magic: The Gathering player. Your job is to win a game played over text."},
                     {"role":"user", "content":f"""
 Here is your history of past game states and actions:
@@ -25,7 +25,7 @@ Please describe your action precisely, including how you pay costs and what you 
 """}]
         if rules_violation_feedback is not None:
             messages.append({"role":"user", "content":f"Your last action attempt was invalid. Please read this feedback and compose a legal action.\n{rules_violation_feedback}"})
-        response = log.llm_generate(
+        response = await log.llm_generate(
             **self.generation_settings,
                 messages=messages,
         )

@@ -11,3 +11,15 @@ I only play online in Arena and making Arena integration is likely against TOS a
 ### For now
 
 Only openai, no anthropic
+
+### Random things to try
+
+when someone wins, generate an image representing how they won (with dalle)
+
+Generate playmats for each player (with dalle)
+
+Generate player avatars
+
+Accept voice input
+
+Read aloud action descriptions

@@ -1,22 +1,23 @@
 import openai
 import os
+import json
+import os
+from datetime import datetime
 logging_dir = 'logs'
 os.makedirs(logging_dir, exist_ok=True)
 os.makedirs(f"{logging_dir}/generations", exist_ok=True)
 os.makedirs(f"{logging_dir}/games", exist_ok=True)
 
-client = openai.Client()
+client = openai.AsyncOpenAI()
 
 prices = {"gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}}
 
 total_input_tokens = 0
 total_output_tokens = 0
-def llm_generate( **kwargs):
+
+async def llm_generate( **kwargs):
     global total_input_tokens, total_output_tokens
-    response = client.chat.completions.create(**kwargs)
-    import json
-    import os
-    from datetime import datetime
+    response = await client.chat.completions.create(**kwargs)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     os.makedirs(logging_dir, exist_ok=True)
@@ -30,7 +31,6 @@ def llm_generate( **kwargs):
         json.dump(log_data, f, indent=4)
     total_input_tokens += response.usage.prompt_tokens
     total_output_tokens += response.usage.completion_tokens
-    import json
     usage_path = f"{logging_dir}/total_usage.json"
     try:
         with open(usage_path) as f:
@@ -45,3 +45,4 @@ def llm_generate( **kwargs):
     with open(usage_path, "w") as f:
         json.dump(usage, f)
     return response
+

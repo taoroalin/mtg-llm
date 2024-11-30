@@ -1,6 +1,7 @@
 from game_state import GameState, DeckList
 from agents import NaiveAgent
 from game_master import GameMaster
+import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -17,5 +18,5 @@ if __name__ == "__main__":
     print(game_state.model_dump_json(indent=2))
     agents = [NaiveAgent(generation_settings=generation_settings), NaiveAgent(generation_settings=generation_settings)]
     game_master = GameMaster(game_state=game_state, agents=agents, generation_settings=generation_settings)
-    winner = game_master.game_loop()
+    winner = asyncio.run(game_master.game_loop())
     print(f"Player {winner} wins!")
