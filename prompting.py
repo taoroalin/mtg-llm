@@ -76,11 +76,12 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
         for card in player_board.hand:
             parts.append(format_card_full(card, simplify_basic_lands))
             parts.append("")
-        parts.append(f"Library has {len(player_board.library)} cards")
-        parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
             parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
+            parts.append("")
+        parts.append(f"Library has {len(player_board.library)} cards")
+        parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
     return '\n'.join(parts)
     
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str, simplify_basic_lands:bool=True):
@@ -102,11 +103,12 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
                 parts.append("")
         else:
             parts.append(f"Player has ({len(player_board.hand)}) cards in hand")
-        parts.append(f"Library has {len(player_board.library)} cards")
-        parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:")
         for battlefield_card in player_board.battlefield.values():
             parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
+            parts.append("")
+        parts.append(f"Library has {len(player_board.library)} cards")
+        parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         parts.append(f"Current revealed information (eg scrying): {revealed_information}")
     return '\n'.join(parts)
     

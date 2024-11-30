@@ -1,2 +1,5 @@
 pydantic
 openai
+
+# stuff for low quality web app made by llms :(
+fastapi

@@ -3,6 +3,7 @@ import os
 logging_dir = 'logs'
 os.makedirs(logging_dir, exist_ok=True)
 os.makedirs(f"{logging_dir}/generations", exist_ok=True)
+os.makedirs(f"{logging_dir}/games", exist_ok=True)
 
 client = openai.Client()
 

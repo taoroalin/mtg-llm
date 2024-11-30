@@ -9,6 +9,7 @@ from contextlib import redirect_stdout
 from copy import deepcopy
 import traceback
 import log
+import asyncio
 
 class HistoryStep(BaseModel):
     visible_information: str
@@ -34,6 +35,13 @@ class GameMaster(BaseModel):
     winner: Optional[int] = Field(default=None)
     priority_player_revealed_information: str = Field(default="")
     priority_player_available_actions: str = Field(default="")
+    
+    def truncated_json(self, **kwargs) -> str:
+        game_master_copy = deepcopy(self)
+        game_master_copy.past_game_states = game_master_copy.past_game_states[-5:]
+        for history in game_master_copy.player_observation_histories:
+            history[:] = history[-5:]
+        return super().model_dump_json(**kwargs)
         
     def game_loop(self):
         while self.winner is None:
@@ -44,6 +52,8 @@ class GameMaster(BaseModel):
             self.player_action = self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
             print(prompting.format_omniscient_view(self.game_state))
             print(f"Player {self.priority_player} action: {self.player_action}")
+            asyncio.create_task(self.broadcast_state())  # Add at end of method
+
         return self.winner
             
     def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
