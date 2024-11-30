@@ -70,7 +70,6 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
-        parts.append(f"Number of cards in library: {len(player_board.library)}")
         
         parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
         parts.append("Hand cards full info:")
@@ -87,15 +86,14 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str, simplify_basic_lands:bool=True):
     parts = []
     parts.append(f"You are player {player_index}")
-    parts.append(f"Player {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
+    parts.append(f"Opponent {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
     for index, player_board in enumerate(game_state.player_boards):
-        parts.append(f"Player {index}'s board state:" if player_index != index else "Your board state:")
+        parts.append(f"Opponent {index}'s board state:" if player_index != index else "Your board state:")
         parts.append(f"Life: {player_board.life}")
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
-        parts.append(f"Number of cards in library: {len(player_board.library)}")
         if player_index == index:
             parts.append(f"Hand ({len(player_board.hand)}) cards: {', '.join(player_board.hand)}")
             parts.append("Hand cards full info:")

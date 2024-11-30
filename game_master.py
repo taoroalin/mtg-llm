@@ -112,6 +112,10 @@ class GameMaster(BaseModel):
                 "parameters": {
                     "type": "object",
                     "properties": {
+                        "reasoning": {
+                            "type": "string",
+                            "description": "Reasoning about when any player will next be able to take an action and what needs to be executed to advance the game state to that point."
+                        },
                         "priority_player": {
                             "type": "integer",
                             "description": "Index of player who currently has priority"
@@ -121,7 +125,7 @@ class GameMaster(BaseModel):
                             "description": "Python code to execute to update game state. This code will execute in a context with `game_state` defined. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."
                         },
                     },
-                    "required": ["priority_player", "python_code"]
+                    "required": ["reasoning", "priority_player", "python_code"]
                 }
             }],
             "function_call":{"name": "advance_game_state"}}
