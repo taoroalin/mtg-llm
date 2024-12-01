@@ -1,5 +1,6 @@
 import styled from '@emotion/styled'
 import { HistoryStep } from '../types'
+import ReactMarkdown from 'react-markdown'
 
 const ChatPanel = styled.div`
   background: #f5f5f5;
@@ -31,7 +32,8 @@ export function GameHistory({ playerHistories }: GameHistoryProps) {
       {playerHistories.map((playerHistory, playerIndex) => (
         playerHistory.map((step, stepIndex) => (
           <ChatMessage key={`${playerIndex}-${stepIndex}`}>
-            <strong>Player {playerIndex + 1}:</strong> {step.action}
+            <strong>Player {playerIndex + 1}:</strong>{' '}
+            <ReactMarkdown>{step.action}</ReactMarkdown>
           </ChatMessage>
         ))
       ))}

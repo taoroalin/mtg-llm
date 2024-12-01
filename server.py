@@ -15,6 +15,9 @@ app = FastAPI()
 
 class GameStateWebSocket:
     def __init__(self):
+        print("\n" + "="*50)
+        print("       STARTING NEW MAGIC GAME")
+        print("="*50 + "\n")
         self.active_connections: Set[WebSocket] = set()
         generation_settings = {
             "model": "gpt-4o-2024-08-06",
@@ -76,7 +79,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
         
         
 @app.post("/create_game")
-# @app.options("/create_game")
+@app.options("/create_game")
 async def create_game(request: Request):
     if request.method == "OPTIONS":
         response = JSONResponse(content={})

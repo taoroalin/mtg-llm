@@ -21,7 +21,7 @@ async def generate_playmat_for_deck(decklist: DeckList) -> bytes:
             },
             {
                 "role": "user",
-                "content": f"Create a playmat image prompt based on these cards: {json.dumps(cards_info, indent=2)}"
+                "content": f"Make a prompt for the image generation model Dalle 3 to generate a playmat image based on these cards: {json.dumps(cards_info, indent=2)}"
             }
         ],
         temperature=0.7

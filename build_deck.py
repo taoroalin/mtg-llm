@@ -162,6 +162,7 @@ The deck should only use cards that are legal in the given format.
 The deck should have a good mana curve.
 The deck should either have very strong synergies or use the strongest cards in the format.
 A deck should not use any suboptimal cards in the given format. For instance, the card Shock is suboptimal in Modern, because Lightning Bolt and numerous other cards are almost strictly better.
+A good deck has enough support for its synergy cards. For instance, a deck with 8 cards that assist other Merfolk cards needs ~16 total Merfolk cards in order for the Merfolk synergy cards to be worthwhile. If a deck request requires a specific synergy, you may need to prioritize synergy over general card quality.
 
 Brainstorm what decks this deck will likely play against, and consider whether it has the tools to win against them.
 """
@@ -187,9 +188,9 @@ Brainstorm what decks this deck will likely play against, and consider whether i
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    decklist = asyncio.run(generate_deck_from_request("Please make a pioneer legal Bird themed deck"))
+    decklist = asyncio.run(generate_deck_from_request("Please make a pioneer legal White devotion deck"))
     print(decklist)
     print(compute_decklist_stats(decklist))
     os.makedirs("assets/built_decks", exist_ok=True)
-    with open(f"assets/built_decks/bird_deck.json", "w") as f:
+    with open(f"assets/built_decks/white_devotion_deck.json", "w") as f:
         json.dump(decklist.model_dump(), f, indent=4)

@@ -2,7 +2,7 @@ import game_state
 import prompts
 import prompting
 from pydantic import BaseModel, Field
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 import json
 import io
 from contextlib import redirect_stdout
@@ -31,14 +31,18 @@ class GameMaster(BaseModel):
     step_callback: Optional[Callable[[], None]] = Field(default=None)
     past_game_states: list[game_state.GameState] = Field(default_factory=list)
     player_observation_histories: list[list[HistoryStep]] = Field(default_factory=list)
+    
     priority_player: int = Field(default=0)
     player_action:str = Field(default="")
     invalid_action_feedback: Optional[str] = Field(default=None)
     winner: Optional[int] = Field(default=None)
     priority_player_revealed_information: str = Field(default="")
     priority_player_available_actions: str = Field(default="")
+    
     used_python_code: list[str] = Field(default_factory=list)
     error_messages: list[str] = Field(default_factory=list)
+    global_action_history: list[dict[str, int | str]] = Field(default_factory=list)
+    code_local_vars: Optional[dict[str, Any]] = Field(default=None, exclude=True)
     
     def model_post_init(self, *args, **kwargs):
         self.player_observation_histories = [[] for _ in self.agents]
@@ -48,8 +52,7 @@ class GameMaster(BaseModel):
         game_master_copy.past_game_states = game_master_copy.past_game_states[-5:]
         for history in game_master_copy.player_observation_histories:
             history[:] = history[-5:]
-        
-        return super().model_dump_json(**kwargs)
+        return game_master_copy.model_dump_json(**kwargs)
         
     async def step(self):
         self.past_game_states.append(deepcopy(self.game_state))
@@ -221,6 +224,12 @@ class GameMaster(BaseModel):
                 self.invalid_action_feedback = invalid_action_feedback
                 self.error_messages.append(f"Player {self.priority_player} action was invalid: \n\n{action} \n\nInvalid reason: {invalid_action_feedback}")
                 return
+            self.global_action_history.append(
+                {
+                    "player_index": self.priority_player,
+                    "action": action
+                }
+            )
         await self.advance_game_to_next_priority()
         analyzed_state = await self.analyze_state_at_priority()
         if analyzed_state.get("winner") is not None:
@@ -232,27 +241,40 @@ class GameMaster(BaseModel):
     def get_base_messages(self):
         omniscient_view = prompting.format_omniscient_view(self.game_state)
         game_state_code = open("game_state.py").read()
-        messages = [{"role":"system", "content":"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API."""},{"role":"user", "content":f"""Game Phase reminder:
-{prompts.game_phase_guide}"""},{"role":"user", "content":f"""
+        global_action_history = "\n".join([f"Player {action['player_index']}: {action['action']}" for action in self.global_action_history])
+        used_python_code = "\n".join(self.used_python_code)
+        messages = [
+            {"role":"system", "content":"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API."""},{"role":"user", "content":f"""Game Phase reminder:
+{prompts.game_phase_guide}"""},
+            {"role":"user", "content":f"""
 The current game state is stored in python objects. Here is a text summary of the current game state:
 
 Here are the python classes that hold the game state:
 {game_state_code}
 
 Current Game State:
-{omniscient_view}"""}]
+{omniscient_view}"""},
+            {"role":"user", "content":f"""
+Here are all the actions agents have taken in this game:
+{global_action_history}
+"""},
+            {"role":"user", "content":f"""
+Here is all the python code that you have used to execute actions and advance game state so far:
+{used_python_code}
+"""},
+        ]
         return messages
         
     async def execute_code_with_game_state(self, code: str) -> tuple[bool, str]:
 
         f = io.StringIO()
         previous_game_state = deepcopy(self.game_state)
-        local_vars = {"game_state": self.game_state}
-        local_vars.update({name: getattr(game_state, name) for name in dir(game_state) if not name.startswith('_')})
-        
+        global_vars = {name: getattr(game_state, name) for name in dir(game_state) if not name.startswith('_')}
+        if self.code_local_vars is None:
+            self.code_local_vars = {"game_state": self.game_state}
         try:
             with redirect_stdout(f):
-                exec(code, {}, local_vars)
+                exec(code, global_vars, self.code_local_vars)
             self.used_python_code.append(code)
             return True, f.getvalue()
         except Exception:

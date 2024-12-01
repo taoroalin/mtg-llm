@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { PlayerBoard } from './components/PlayerBoard';
 import { GameMaster } from './types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameHistory } from './components/GameHistory';
 import { CodeHistory } from './components/CodeHistory';
 
@@ -25,23 +25,38 @@ const GameInfo = styled.div`
 function App() {
   const [gameMaster, setGameMaster] = useState<GameMaster | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     const createGame = async () => {
       const response = await fetch('http://localhost:8000/create_game', { method: 'POST' });
       const { game_id } = await response.json();
+      console.log("Creating game", game_id);
       setGameId(game_id);
+
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+
       const ws = new WebSocket(`ws://localhost:8000/ws/${game_id}`);
-      
+      wsRef.current = ws;
+
       ws.onmessage = (event) => {
-        const newGameMaster = JSON.parse(event.data);
-        setGameMaster(newGameMaster);
+        if (wsRef.current === ws) {
+          const newGameMaster = JSON.parse(event.data);
+          setGameMaster(newGameMaster);
+        }else{
+          ws.close();
+        }
       };
-
-      return () => ws.close();
-    };
-
+    }
     createGame();
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
   }, []);
 
   if (!gameMaster || gameId===null) return <div>Loading...</div>;

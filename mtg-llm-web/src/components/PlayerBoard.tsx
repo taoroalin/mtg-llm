@@ -36,8 +36,8 @@ interface PlayerBoardProps {
 }
 
 export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) => {
-  const [sortedBattlefield, setSortedBattlefield] = useState<{card: BattlefieldCard, manaValue: number}[]>([]);
-  const [sortedHand, setSortedHand] = useState<{name: string, manaValue: number}[]>([]);
+  const [sortedBattlefield, setSortedBattlefield] = useState<{card: BattlefieldCard, manaValue: number}[]>(Object.values(board.battlefield).map(card => ({card: card, manaValue: 0})));
+  const [sortedHand, setSortedHand] = useState<{name: string, manaValue: number}[]>(board.hand.map(card => ({name: card, manaValue: 0})));
 
   useEffect(() => {
     const fetchAndSortCards = async () => {
