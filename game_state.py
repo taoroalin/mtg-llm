@@ -9,14 +9,8 @@ Card = str  # Type alias
 
 CardOrToken = Card
 
-class Format(Enum):
-    COMMANDER = "COMMANDER"
-    MODERN = "MODERN"
-    STANDARD = "STANDARD"
-    PAUPER = "PAUPER"
-    PIONEER = "PIONEER"
-
 class CardInfo(TypedDict, total=False):
+    "All gameplay relevant information on a card."
     name: str
     manaCost: str 
     manaValue: int
@@ -34,7 +28,7 @@ class CardInfo(TypedDict, total=False):
     text: str
     
     number: str
-    legalities:Optional[list[Format]]
+    legalities:Optional[list[str]] # list of lowercase format names
     isToken: bool
     
 def card_fill_missing_fields(card_info:CardInfo):
@@ -49,10 +43,10 @@ def card_fill_missing_fields(card_info:CardInfo):
 def get_card_info(name:str) -> CardInfo:
     return card_fill_missing_fields(card_database['data'][name])
 
-card_database = json.load(Path("assets/AtomicCardsGameplay.json").open())
+card_database: dict[str, CardInfo] = json.load(Path("assets/AtomicCardsGameplay.json").open())
 
 def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:Optional[int]=None, toughness:Optional[int]=None, text:str='') -> CardInfo:
-    """Token names don't contain 'Token', eg name is 'Goblin' not 'Goblin Token'. Token-ness is indicated by isToken=True."""
+    """Token names don't contain 'Token', eg name is 'Goblin' not 'Goblin Token'"""
     assert name not in card_database['data'], f"Card {name} already exists"
     new_card_info: CardInfo = {
         "name": name,
@@ -85,7 +79,7 @@ class TurnStep(Enum):
     CLEANUP = "CLEANUP"
 
 class DeckList(BaseModel):
-    "Decklist for a player at the beginning of the game"
+    "Decklist for a player at the beginning of the game. Mapping from card name to count."
     mainboard: dict[Card, int]
     sideboard: dict[Card, int]
     
