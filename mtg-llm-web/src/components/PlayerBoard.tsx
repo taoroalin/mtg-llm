@@ -21,6 +21,7 @@ const Battlefield = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
+  min-height: ${CARD_HEIGHT}px;
 `;
 
 const CardWrapper = styled.div<{tapped: boolean}>`

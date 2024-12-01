@@ -1,11 +1,14 @@
 import styled from '@emotion/styled';
 
 const CodePanel = styled.div`
-  background: #e8e8e8;
   padding: 15px;
   border-radius: 8px;
   height: calc(100vh - 40px);
   overflow-y: auto;
+  direction: rtl;
+  > * {
+    direction: ltr;
+  }
 `;
 
 const CodeBlock = styled.pre`

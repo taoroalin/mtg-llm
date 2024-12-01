@@ -3,9 +3,7 @@ import { HistoryStep } from '../types'
 import ReactMarkdown from 'react-markdown'
 
 const ChatPanel = styled.div`
-  background: #f5f5f5;
   padding: 15px;
-  border-radius: 8px;
   height: calc(100vh - 40px);
   overflow-y: auto;
 `
