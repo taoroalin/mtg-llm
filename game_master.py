@@ -10,6 +10,7 @@ from copy import deepcopy
 import traceback
 import log
 import asyncio
+import uuid
 
 class HistoryStep(BaseModel):
     visible_information: str
@@ -25,6 +26,7 @@ class AgentInterface(BaseModel):
 python_tool_description = """Python code to execute to update game state. This code will execute in a context with variable `game_state` defined and game_state.py imported. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. This code will only be executed once on the exact game state you can see, so you only need to check conditions in complex situations or when you need to read information that's hidden by default like players' libraries. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."""
 
 class GameMaster(BaseModel):
+    game_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     game_state: game_state.GameState
     agents: list["AgentInterface"]
     generation_settings: dict
@@ -57,7 +59,9 @@ class GameMaster(BaseModel):
     async def step(self):
         self.past_game_states.append(deepcopy(self.game_state))
         await self.game_master_step(self.player_action)
+        log.save_game(self.game_id, self)
         if self.winner is not None:
+            log.finish_game(self.game_id)
             return self.winner
         self.player_action = await self.get_player_action(self.priority_player, self.priority_player_available_actions, self.priority_player_revealed_information,self.invalid_action_feedback)
         print(prompting.format_omniscient_view(self.game_state))

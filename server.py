@@ -14,7 +14,7 @@ import uuid
 app = FastAPI()
 
 class GameStateWebSocket:
-    def __init__(self):
+    def __init__(self, game_id: str):
         print("\n" + "="*50)
         print("       STARTING NEW MAGIC GAME")
         print("="*50 + "\n")
@@ -32,7 +32,7 @@ class GameStateWebSocket:
         new_state = game_state.GameState.init_from_decklists([deck_1, deck_2])
         print(new_state.model_dump_json(indent=2))
         new_agents = [agents.NaiveAgent(generation_settings=generation_settings), agents.NaiveAgent(generation_settings=generation_settings)]
-        self.game_master = GameMaster(game_state=new_state, agents=new_agents, generation_settings=generation_settings)
+        self.game_master = GameMaster(game_id=game_id, game_state=new_state, agents=new_agents, generation_settings=generation_settings)
         
         asyncio.create_task(self.game_loop())
         
@@ -89,7 +89,7 @@ async def create_game(request: Request):
         return response
         
     game_id = str(uuid.uuid4())
-    games[game_id] = GameStateWebSocket()
+    games[game_id] = GameStateWebSocket(game_id=game_id)
     response = JSONResponse(content={"game_id": game_id})
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "*" 

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { useState, useEffect } from 'react';
-import { getCardByName } from '../scryfallApi';
+import { getCardByName, getPreferredPrinting } from '../scryfallApi';
 
 const CardContainer = styled.div<{ tapped: boolean, isFallback: boolean }>`
   width: 150px;
@@ -20,7 +20,7 @@ const CardContainer = styled.div<{ tapped: boolean, isFallback: boolean }>`
 
 const CardName = styled.div`
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
 `;
 
 const CardStats = styled.div`
@@ -42,10 +42,6 @@ const CardImage = styled.img`
   border-radius: 8px;
 `;
 
-const FallbackCard = styled(CardContainer)`
-  background: #e0e0e0;
-`;
-
 interface CardProps {
   name: string;
   tapped: boolean;
@@ -61,8 +57,8 @@ export const Card = ({ name, tapped, power, toughness, damage = 0 }: CardProps) 
   useEffect(() => {
     const fetchCardImage = async () => {
       try {
-        const data = await getCardByName(name);
-        setImageUrl(data.image_uris?.normal);
+        const imageUrl = await getPreferredPrinting(name);
+        setImageUrl(imageUrl);
       } catch (error) {
         setImageError(true);
       }
@@ -70,22 +66,10 @@ export const Card = ({ name, tapped, power, toughness, damage = 0 }: CardProps) 
     fetchCardImage();
   }, [name]);
 
-  if (imageUrl && !imageError) {
     return (
       <CardContainer tapped={tapped} isFallback={imageError}>
-        <CardImage src={imageUrl} onError={() => setImageError(true)} />
+        {imageUrl ? <CardImage src={imageUrl} onError={() => setImageError(true)} /> : <div><CardName>{name}</CardName></div>}
       </CardContainer>
     );
-  }
 
-  return (
-    <FallbackCard tapped={tapped} isFallback={true}>
-      <CardName>{name}</CardName>
-      {power !== undefined && toughness !== undefined && (
-        <CardStats>
-          {power}/{toughness} {damage > 0 && `(${damage} damage)`}
-        </CardStats>
-      )}
-    </FallbackCard>
-  );
 };

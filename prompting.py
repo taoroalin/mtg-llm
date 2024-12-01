@@ -32,7 +32,7 @@ def format_card_full(card_name:game_state.Card, simplify_basic_lands:bool=False,
         text = card['text']
         if omit_all_reminder_text:
             text = re.sub(r'\([^)]*\)', '', text)
-        parts.append(f"Rules Text: {text}")
+        parts.append(f"Text: {text}")
         
     stats = []
     if 'power' in card and 'toughness' in card:
@@ -72,8 +72,7 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
         if counters:
             parts.append(f"Player Counters: {', '.join(counters)}")
         hand = player_board.get_hand_sorted()
-        parts.append(f"Hand ({len(hand)}) cards: {', '.join(hand)}")
-        parts.append("Hand cards full info:")
+        parts.append(f"Hand hand has {len(hand)} cards:")
         for card in hand:
             parts.append(format_card_full(card, simplify_basic_lands))
             parts.append("")
@@ -102,8 +101,7 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
             parts.append(f"Player Counters: {', '.join(counters)}")
         hand = player_board.get_hand_sorted()
         if player_index == index:
-            parts.append(f"Hand ({len(hand)}) cards: {', '.join(hand)}")
-            parts.append("Hand cards full info:")
+            parts.append(f"Hand has {len(hand)} cards:")
             for card in hand:
                 parts.append(format_card_full(card, simplify_basic_lands))
                 parts.append("")

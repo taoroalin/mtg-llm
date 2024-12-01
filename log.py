@@ -8,6 +8,10 @@ os.makedirs(logging_dir, exist_ok=True)
 os.makedirs(f"{logging_dir}/generations", exist_ok=True)
 os.makedirs(f"{logging_dir}/games", exist_ok=True)
 
+os.makedirs("database", exist_ok=True)
+os.makedirs("database/finished_games", exist_ok=True)
+os.makedirs("database/ongoing_games", exist_ok=True)
+
 client = openai.AsyncOpenAI()
 
 prices = {"gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}, "gpt-4o-2024-05-13": {"input": 5/1_000_000, "output": 10/1_000_000}, "o1-preview": {"input": 15/1_000_000, "output": 60/1_000_000}}
@@ -46,3 +50,11 @@ async def llm_generate( **kwargs):
         json.dump(usage, f)
     return response
 
+def save_game(id:str, game_state):
+    with open(f"database/ongoing_games/{id}.json", "w") as f:
+        json.dump(game_state.model_dump(), f)
+
+def finish_game(id:str):
+    src_path = f"database/ongoing_games/{id}.json"
+    dst_path = f"database/finished_games/{id}.json"
+    os.rename(src_path, dst_path)

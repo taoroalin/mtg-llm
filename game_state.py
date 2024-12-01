@@ -4,6 +4,7 @@ import random
 from enum import Enum, auto
 import json
 from pathlib import Path
+import copy
 
 Card = str  # Type alias
 
@@ -63,7 +64,7 @@ def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:
     return new_card_info
 
 
-class TurnStep(Enum):
+class TurnStep(str, Enum):
     UNTAP = "UNTAP"
     UPKEEP = "UPKEEP"
     DRAW = "DRAW" 
@@ -147,12 +148,29 @@ class PlayerBoard(BaseModel):
             battlefield_card.marked_damage = 0
                     
     @classmethod
-    def init_from_decklist(cls, decklist: DeckList):
+    def init_from_decklist(cls, decklist: DeckList, arena_hand_smoothing:bool=False):
         initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
         random.shuffle(initial_library)
-        initial_library, initial_hand = initial_library[7:], initial_library[:7]
+        if arena_hand_smoothing:
+            initial_library, initial_hand = cls.arena_hand_smoothing(initial_library)
+        else:
+            initial_library, initial_hand = initial_library[7:], initial_library[:7]
         self = cls(library=initial_library, hand=initial_hand)
         return self
+        
+    @classmethod
+    def arena_hand_smoothing(cls, library:list[Card])->tuple[list[Card], list[Card]]:
+        """implement approximate MTG Arena augmented hand drawing algorithm:
+        resample any hands that have an unusual number of lands for the deck
+        This is not for competitive play, only for training and demonstration"""
+        land_count = sum(1 for card in library if "Land" in get_card_info(card)["types"])
+        expected_land_count = land_count / len(library) * 7
+        while True:
+            random.shuffle(library)
+            hand, remaining_library = library[:7], library[7:]
+            hand_land_count = sum(1 for card in hand if "Land" in get_card_info(card)["types"])
+            if abs(hand_land_count - expected_land_count) >=1:
+                return hand, remaining_library
         
     @property
     def battlefield_sorted(self) -> list[BattlefieldCard]:
@@ -193,6 +211,15 @@ class GameState(BaseModel):
                 self.player_boards[player_index].battlefield_to_graveyard([battlefield_id])
                     
     @classmethod
-    def init_from_decklists(cls, decklists: list[DeckList]):
-        self = cls(player_decklists=decklists, player_boards=[PlayerBoard.init_from_decklist(decklist) for decklist in decklists])
+    def init_from_decklists(cls, decklists: list[DeckList], arena_hand_smoothing:bool=False):
+        self = cls(player_decklists=decklists, player_boards=[PlayerBoard.init_from_decklist(decklist, arena_hand_smoothing) for decklist in decklists])
+        return self
+        
+    @classmethod
+    def init_mirror(cls, decklist: DeckList):
+        "init with identical shuffles to reduce variance in initial game state"
+        randomized_player_board = PlayerBoard.init_from_decklist(decklist, arena_hand_smoothing=True)
+        player_boards = [copy.deepcopy(randomized_player_board) for _ in range(2)]
+        
+        self = cls(player_decklists=[decklist]*2, player_boards=player_boards)
         return self
