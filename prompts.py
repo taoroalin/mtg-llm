@@ -115,6 +115,6 @@ Main Phase 2:
 
 Ending Phase:
 1. End Step - End of turn triggers
-2. Cleanup - Discard to 7, remove damage, end turn effects"""
-
+2. Cleanup - Active player discards down to 7 cards in hand of their choice, remove damage, end turn effects
+"""
 comprehensive_rules = open("assets/MagicCompRules.txt").read()

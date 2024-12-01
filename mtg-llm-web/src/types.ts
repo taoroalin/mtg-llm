@@ -81,6 +81,8 @@ export interface GameMaster {
   winner: number | null;
   priority_player_revealed_information: string;
   priority_player_available_actions: string;
+  used_python_code: string[];
+  error_messages: string[];
 }
 
 export interface AgentInterface {

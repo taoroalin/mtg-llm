@@ -85,6 +85,7 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         if player_board.exile:
             parts.append(f"Exile ({len(player_board.exile)}) cards: {', '.join(player_board.exile)}")
+    parts.append(f"Starting player: {game_state.starting_player_index}")
     return '\n'.join(parts)
     
 def format_player_view(game_state:game_state.GameState, player_index:int, revealed_information:str, simplify_basic_lands:bool=True):
@@ -117,5 +118,6 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
         if player_board.exile:
             parts.append(f"Exile ({len(player_board.exile)}) cards: {', '.join(player_board.exile)}")
         parts.append(f"Current revealed information (eg scrying): {revealed_information}")
+    parts.append(f"Starting player: {game_state.starting_player_index}")
     return '\n'.join(parts)
     

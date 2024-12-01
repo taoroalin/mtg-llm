@@ -1,13 +1,16 @@
 import styled from '@emotion/styled';
+import { useState, useEffect } from 'react';
 
-const CardContainer = styled.div<{ tapped: boolean }>`
+const CardContainer = styled.div<{ tapped: boolean, isFallback: boolean }>`
   width: 150px;
   height: 209px; // Standard MTG card ratio
-  border: 2px solid #000;
+  ${props => props.isFallback && `
+    border: 2px solid #000;
+    background: #f8f8f8;
+    padding: 8px;
+  `}
   border-radius: 10px;
-  padding: 8px;
   margin: 8px;
-  background: #f8f8f8;
   display: flex;
   flex-direction: column;
   transform: ${props => props.tapped ? 'rotate(90deg)' : 'none'};
@@ -31,13 +34,60 @@ interface CardProps {
   damage?: number;
 }
 
-export const Card = ({ name, tapped, power, toughness, damage = 0 }: CardProps) => (
-  <CardContainer tapped={tapped}>
-    <CardName>{name}</CardName>
-    {power !== undefined && toughness !== undefined && (
-      <CardStats>
-        {power}/{toughness} {damage > 0 && `(${damage} damage)`}
-      </CardStats>
-    )}
-  </CardContainer>
-);
+const CardImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+`;
+
+const FallbackCard = styled(CardContainer)`
+  background: #e0e0e0;
+`;
+
+interface CardProps {
+  name: string;
+  tapped: boolean;
+  power?: number | string;
+  toughness?: number | string;
+  damage?: number;
+}
+
+export const Card = ({ name, tapped, power, toughness, damage = 0 }: CardProps) => {
+  const [imageUrl, setImageUrl] = useState<string>();
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    const fetchCardImage = async () => {
+      try {
+        const response = await fetch(
+          `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
+        );
+        const data = await response.json();
+        setImageUrl(data.image_uris?.normal);
+      } catch (error) {
+        setImageError(true);
+      }
+    };
+    fetchCardImage();
+  }, [name]);
+
+  if (imageUrl && !imageError) {
+    return (
+      <CardContainer tapped={tapped} isFallback={imageError}>
+        <CardImage src={imageUrl} onError={() => setImageError(true)} />
+      </CardContainer>
+    );
+  }
+
+  return (
+    <FallbackCard tapped={tapped} isFallback={true}>
+      <CardName>{name}</CardName>
+      {power !== undefined && toughness !== undefined && (
+        <CardStats>
+          {power}/{toughness} {damage > 0 && `(${damage} damage)`}
+        </CardStats>
+      )}
+    </FallbackCard>
+  );
+};

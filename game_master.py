@@ -22,6 +22,7 @@ class AgentInterface(BaseModel):
         pass
         return ""
 
+python_tool_description = """Python code to execute to update game state. This code will execute in a context with variable `game_state` defined and game_state.py imported. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. This code will only be executed once on the exact game state you can see, so you only need to check conditions in complex situations or when you need to read information that's hidden by default like players' libraries. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."""
 
 class GameMaster(BaseModel):
     game_state: game_state.GameState
@@ -36,13 +37,19 @@ class GameMaster(BaseModel):
     winner: Optional[int] = Field(default=None)
     priority_player_revealed_information: str = Field(default="")
     priority_player_available_actions: str = Field(default="")
+    used_python_code: list[str] = Field(default_factory=list)
+    error_messages: list[str] = Field(default_factory=list)
     
-    
+    def model_post_init(self, *args, **kwargs):
+        self.player_observation_histories = [[] for _ in self.agents]
+        
     def truncated_json(self, **kwargs) -> str:
         game_master_copy = deepcopy(self)
         game_master_copy.past_game_states = game_master_copy.past_game_states[-5:]
         for history in game_master_copy.player_observation_histories:
             history[:] = history[-5:]
+        for board in game_master_copy.game_state.player_boards:
+            board.hand.sort(key=lambda card: game_state.get_card_info(card)["manaValue"])
         return super().model_dump_json(**kwargs)
         
     async def step(self):
@@ -60,8 +67,6 @@ class GameMaster(BaseModel):
         return self.winner
             
     async def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
-        if len(self.player_observation_histories) <= len(self.agents):
-            self.player_observation_histories = [[] for _ in self.agents]
         player_view = prompting.format_player_view(self.game_state, player_index, revealed_information)
         player_action = await self.agents[player_index].take_action(self.player_observation_histories[player_index],player_view, available_actions, invalid_action_feedback)
         self.player_observation_histories[player_index].append(HistoryStep(visible_information=player_view, action=player_action, available_actions=available_actions))
@@ -91,7 +96,7 @@ class GameMaster(BaseModel):
                     },
                     "python_code": {
                         "type": "string",
-                        "description": "Python code to execute to update game state. This code will execute in a context with `game_state` defined. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."
+                        "description": python_tool_description
                     },
                 },
                 "required": ["reasoning", "is_action_valid", "python_code", "winner"]
@@ -215,6 +220,8 @@ class GameMaster(BaseModel):
             is_action_valid, invalid_action_feedback = await self.execute_action(action)
             if not is_action_valid:
                 self.invalid_action_feedback = invalid_action_feedback
+                self.error_messages.append(f"Player {self.priority_player} action was invalid: \n\n{action} \n\nInvalid reason: {invalid_action_feedback}")
+                return
         await self.advance_game_to_next_priority()
         analyzed_state = await self.analyze_state_at_priority()
         if analyzed_state.get("winner") is not None:
@@ -247,7 +254,10 @@ Current Game State:
         try:
             with redirect_stdout(f):
                 exec(code, {}, local_vars)
+            self.used_python_code.append(code)
             return True, f.getvalue()
         except Exception:
+            error_trace = traceback.format_exc()
+            self.error_messages.append(f"Code execution failed\nCode:\n{code}\n\nError:\n{error_trace}")
             self.game_state = previous_game_state
-            return False, traceback.format_exc()
+            return False, error_trace

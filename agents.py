@@ -8,7 +8,7 @@ class NaiveAgent(game_master.AgentInterface):
     generation_settings:dict
 
     async def take_action(self,history:list[game_master.HistoryStep],visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
-        messages = [{"role":"system", "content":"You are an expert Magic: The Gathering player. Your job is to win a game played over text."},
+        messages = [{"role":"system", "content":"You are an expert Magic: The Gathering player. Your job is to win a game played over natural language with a text interface, talking to a judge who tracks game state using Python code."},
                     {"role":"user", "content":f"""
 Here is your history of past game states and actions:
 {history}

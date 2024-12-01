@@ -10,11 +10,11 @@ Card = str  # Type alias
 CardOrToken = Card
 
 class Format(Enum):
-    COMMANDER = auto()
-    MODERN = auto()
-    STANDARD = auto()
-    PAUPER = auto()
-    PIONEER = auto()
+    COMMANDER = "COMMANDER"
+    MODERN = "MODERN"
+    STANDARD = "STANDARD"
+    PAUPER = "PAUPER"
+    PIONEER = "PIONEER"
 
 class CardInfo(TypedDict, total=False):
     name: str
@@ -43,6 +43,7 @@ def get_card_info(name:str) -> CardInfo:
 card_database = json.load(Path("assets/AtomicCardsGameplay.json").open())
 
 def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:Optional[int]=None, toughness:Optional[int]=None, text:str='') -> CardInfo:
+    """Token names don't contain 'Token', eg name is 'Goblin' not 'Goblin Token'. Token-ness is indicated by isToken=True."""
     assert name not in card_database['data'], f"Card {name} already exists"
     new_card_info: CardInfo = {
         "name": name,
@@ -60,19 +61,19 @@ def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:
 
 
 class TurnStep(Enum):
-    UNTAP = auto()
-    UPKEEP = auto() 
-    DRAW = auto()
-    MAIN_1 = auto()
-    BEGIN_COMBAT = auto()
-    DECLARE_ATTACKERS = auto()
-    DECLARE_BLOCKERS = auto()
-    FIRST_STRIKE_DAMAGE = auto()
-    COMBAT_DAMAGE = auto()
-    END_COMBAT = auto()
-    MAIN_2 = auto()
-    END = auto()
-    CLEANUP = auto()
+    UNTAP = "UNTAP"
+    UPKEEP = "UPKEEP"
+    DRAW = "DRAW" 
+    MAIN_1 = "MAIN_1"
+    BEGIN_COMBAT = "BEGIN_COMBAT"
+    DECLARE_ATTACKERS = "DECLARE_ATTACKERS"
+    DECLARE_BLOCKERS = "DECLARE_BLOCKERS"
+    FIRST_STRIKE_DAMAGE = "FIRST_STRIKE_DAMAGE"
+    COMBAT_DAMAGE = "COMBAT_DAMAGE"
+    END_COMBAT = "END_COMBAT"
+    MAIN_2 = "MAIN_2"
+    END = "END"
+    CLEANUP = "CLEANUP"
 
 class DeckList(BaseModel):
     "Decklist for a player at the beginning of the game"
@@ -134,6 +135,10 @@ class PlayerBoard(BaseModel):
             self.exile.append(battlefield_card.card)
             del self.battlefield[battlefield_id]
             
+    def tap_permanents(self, battlefield_ids: list[int]):
+        for battlefield_id in battlefield_ids:
+            self.battlefield[battlefield_id].tapped = True
+            
     @classmethod
     def init_from_decklist(cls, decklist: DeckList):
         initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
@@ -155,6 +160,7 @@ class GameState(BaseModel):
     active_player_index: int = Field(default=0)
     turn_step: TurnStep = Field(default=TurnStep.UNTAP)
     turn_number: int = Field(default=1, description="The number of the current turn, starting from 1. Each player taking a turn is 1 turn.")
+    starting_player_index: int = Field(default=0)
     
     def cleanup_damage(self):
         for player_board in self.player_boards:
@@ -172,10 +178,6 @@ class GameState(BaseModel):
         battlefield_card = BattlefieldCard.from_card(card, player_index, self.next_battlefield_id)
         self.player_boards[player_index].battlefield[self.next_battlefield_id] = battlefield_card
         self.next_battlefield_id += 1
-            
-    def tap_permanents(self, player_index: int, battlefield_ids: list[int]):
-        for battlefield_id in battlefield_ids:
-            self.player_boards[player_index].battlefield[battlefield_id].tapped = True
 
     def deal_damage(self, player_index: int, battlefield_ids: list[int], damage: int):
         for battlefield_id in battlefield_ids:

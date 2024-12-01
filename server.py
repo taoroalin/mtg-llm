@@ -1,11 +1,12 @@
 from fastapi import FastAPI, WebSocket, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response, RedirectResponse
 from typing import Set
 import asyncio
 from contextlib import asynccontextmanager
 from game_master import GameMaster
 import game_state
 import agents
+import image_generation
 
 app = FastAPI()
 
@@ -14,7 +15,8 @@ class GameStateWebSocket:
         self.active_connections: Set[WebSocket] = set()
         generation_settings = {
             "model": "gpt-4o-2024-08-06",
-            "temperature": 1
+            "temperature": 1,
+            "max_completion_tokens": 4000
         }
         with open("assets/example_decks/Cats_Elves.json") as f:
             deck_1 = game_state.DeckList.model_validate_json(f.read())
@@ -87,3 +89,10 @@ async def create_game(request: Request):
     response.headers["Access-Control-Allow-Headers"] = "*"
     return response
 
+@app.get("/playmat/{game_id}/{player_index}.png")
+async def get_playmat(game_id: str, player_index: str):
+    game = games[game_id]
+    decklist = game.game_master.game_state.player_decklists[int(player_index)]
+    
+    image_url = await image_generation.generate_playmat_for_deck(decklist)
+    return RedirectResponse(url=image_url, status_code=303)
