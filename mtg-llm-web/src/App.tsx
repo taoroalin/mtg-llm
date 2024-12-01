@@ -52,7 +52,6 @@ function App() {
 
       <GamePanel>
         <GameInfo>
-          <h1>MTG Game Master</h1>
           <p>Active Player: {gameMaster.game_state.active_player_index + 1}</p>
           <p>Turn Step: {gameMaster.game_state.turn_step}</p>
         </GameInfo>

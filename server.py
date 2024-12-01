@@ -7,6 +7,9 @@ from game_master import GameMaster
 import game_state
 import agents
 import image_generation
+import random
+import os
+import uuid
 
 app = FastAPI()
 
@@ -18,9 +21,10 @@ class GameStateWebSocket:
             "temperature": 1,
             "max_completion_tokens": 4000
         }
-        with open("assets/example_decks/Cats_Elves.json") as f:
+        deck_files = [f for f in os.listdir("assets/example_decks") if f.endswith(".json")]
+        with open(f"assets/example_decks/{random.choice(deck_files)}") as f:
             deck_1 = game_state.DeckList.model_validate_json(f.read())
-        with open("assets/example_decks/Cats_Elves.json") as f:
+        with open(f"assets/example_decks/{random.choice(deck_files)}") as f:
             deck_2 = game_state.DeckList.model_validate_json(f.read())
         new_state = game_state.GameState.init_from_decklists([deck_1, deck_2])
         print(new_state.model_dump_json(indent=2))
@@ -81,7 +85,7 @@ async def create_game(request: Request):
         response.headers["Access-Control-Allow-Headers"] = "*"
         return response
         
-    game_id = str(len(games))
+    game_id = str(uuid.uuid4())
     games[game_id] = GameStateWebSocket()
     response = JSONResponse(content={"game_id": game_id})
     response.headers["Access-Control-Allow-Origin"] = "*"

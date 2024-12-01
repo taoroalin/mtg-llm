@@ -37,8 +37,17 @@ class CardInfo(TypedDict, total=False):
     legalities:Optional[list[Format]]
     isToken: bool
     
+def card_fill_missing_fields(card_info:CardInfo):
+    if not card_info.get('manaValue'):
+        card_info['manaValue'] = 0
+    if not card_info.get('manaCost'):
+        card_info['manaCost'] = ""
+    if not card_info.get('text'):
+        card_info['text'] = ""
+    return card_info
+
 def get_card_info(name:str) -> CardInfo:
-    return card_database['data'][name]
+    return card_fill_missing_fields(card_database['data'][name])
 
 card_database = json.load(Path("assets/AtomicCardsGameplay.json").open())
 
@@ -139,6 +148,10 @@ class PlayerBoard(BaseModel):
         for battlefield_id in battlefield_ids:
             self.battlefield[battlefield_id].tapped = True
             
+    def cleanup_damage(self):
+        for battlefield_card in self.battlefield.values():
+            battlefield_card.marked_damage = 0
+                    
     @classmethod
     def init_from_decklist(cls, decklist: DeckList):
         initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
@@ -150,7 +163,7 @@ class PlayerBoard(BaseModel):
     @property
     def battlefield_sorted(self) -> list[BattlefieldCard]:
         return sorted(self.battlefield.values(), key=lambda card: get_card_info(card.card)["manaValue"])
-
+        
 class GameState(BaseModel):
     player_decklists: list[DeckList]
     player_boards: list[PlayerBoard]
@@ -164,8 +177,7 @@ class GameState(BaseModel):
     
     def cleanup_damage(self):
         for player_board in self.player_boards:
-            for battlefield_card in player_board.battlefield.values():
-                battlefield_card.marked_damage = 0
+            player_board.cleanup_damage()
     
     def shuffle_library(self, player_index: int):
         random.shuffle(self.player_boards[player_index].library)

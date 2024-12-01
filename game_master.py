@@ -48,8 +48,7 @@ class GameMaster(BaseModel):
         game_master_copy.past_game_states = game_master_copy.past_game_states[-5:]
         for history in game_master_copy.player_observation_histories:
             history[:] = history[-5:]
-        for board in game_master_copy.game_state.player_boards:
-            board.hand.sort(key=lambda card: game_state.get_card_info(card)["manaValue"])
+        
         return super().model_dump_json(**kwargs)
         
     async def step(self):

@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { useState, useEffect } from 'react';
+import { getCardByName } from '../scryfallApi';
 
 const CardContainer = styled.div<{ tapped: boolean, isFallback: boolean }>`
   width: 150px;
@@ -60,10 +61,7 @@ export const Card = ({ name, tapped, power, toughness, damage = 0 }: CardProps) 
   useEffect(() => {
     const fetchCardImage = async () => {
       try {
-        const response = await fetch(
-          `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
-        );
-        const data = await response.json();
+        const data = await getCardByName(name);
         setImageUrl(data.image_uris?.normal);
       } catch (error) {
         setImageError(true);
