@@ -41,11 +41,19 @@ interface Printing {
 }
 
 export async function getAllPrintsByName(cardName: string): Promise<Printing[]> {
-  const response = await fetch(
-    `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"+include:extras+prefer:newest`
-  );
-  const data = await response.json();
-  return data.data.map((card: any) => ({
+    // For some reason non fullart query returns 0 full art printings for basic lands, need to search separately
+  const [fullart_response, normal_response] = await Promise.all([
+    fetch(
+      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"+include:extras+is:fullart&unique=art&order=usd&dir=desc`
+    ),
+    fetch(
+      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"+include:extras&unique=art&order=usd&dir=desc`
+    )
+  ]);
+  const [fullart_data, normal_data] = await Promise.all([fullart_response.json(), normal_response.json()]);
+  const data = fullart_response.status === 404 || fullart_data.data.length === 0 ? normal_data.data : fullart_data.data;
+    
+  return data.map((card: any) => ({
     set: card.set_name,
     image: card.image_uris?.normal,
     collectorNumber: card.collector_number,
@@ -76,11 +84,13 @@ export function sortPrintingsByTaoPreference(printings: Printing[]) {
   ];
 
   return printings.sort((a, b) => {
-    const aIndex = preferredArtists.indexOf(a.artist) === -1 ? -1 : preferredArtists.indexOf(a.artist);
-    const bIndex = preferredArtists.indexOf(b.artist) === -1 ? -1 : preferredArtists.indexOf(b.artist);
+    const getPreferenceScore = (printing: Printing) => {
+      const artistIndex = preferredArtists.indexOf(printing.artist) === -10 ? -1 : preferredArtists.indexOf(printing.artist);
+      return artistIndex + (printing.isFullArt ? 20 : 0) + (printing.language === "en" ? 20 : 0) + (printing.price ?? 0);
+    }
     
-    const aNum = aIndex+(a.isFullArt?20:0)+(a.language === "en" ? 20 : 0)+(a.price ?? 0);
-    const bNum = bIndex+(b.isFullArt?20:0)+(b.language === "en" ? 20 : 0)+(b.price ?? 0);
+    const aNum = getPreferenceScore(a);
+    const bNum = getPreferenceScore(b);
     const result =  bNum - aNum;
     // console.log({a, b, result});
     return result;

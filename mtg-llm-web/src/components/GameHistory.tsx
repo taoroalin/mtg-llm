@@ -3,14 +3,18 @@ import { HistoryStep } from '../types'
 import ReactMarkdown from 'react-markdown'
 
 const ChatPanel = styled.div`
-  padding: 15px;
-  height: calc(100vh - 40px);
+  padding: 4px;
+  height: 100%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  box-sizing: border-box;
 `
 
 const ChatMessage = styled.div`
   margin-bottom: 10px;
-  padding: 8px;
+  padding: 4px;
   background: white;
   border-radius: 4px;
   

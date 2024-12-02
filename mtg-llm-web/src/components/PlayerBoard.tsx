@@ -10,6 +10,7 @@ const CARD_HEIGHT = 205;
 const BoardContainer = styled.div`
   padding: 20px;
   border: 1px solid #ccc;
+  border-radius: 14px;
   margin: 10px;
 `;
 
@@ -22,6 +23,16 @@ const Battlefield = styled.div`
   flex-wrap: wrap;
   gap: 2px;
   min-height: ${CARD_HEIGHT}px;
+`;
+const Hand = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  min-height: ${CARD_HEIGHT}px;
+  border: 2px solid rgba(0,0,0);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(200, 200, 200, 0.7);
 `;
 
 const CardWrapper = styled.div<{tapped: boolean}>`
@@ -71,10 +82,10 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     backgroundBlendMode: 'overlay'
   }}>
-    <h2>Player {playerIndex} (Life: {board.life})</h2>
+    <h2 style={{marginTop: '4px', marginBottom: '4px', 'marginLeft':'0px'}}>Player {playerIndex} (Life: {board.life})</h2>
     
     <Zone>
-      <h3>Battlefield</h3>
+      <div><strong>Battlefield</strong></div>
       <Battlefield>
         {sortedBattlefield.map(({card}) => (
           <CardWrapper key={card.battlefield_id} tapped={card.tapped}>
@@ -89,14 +100,14 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
     </Zone>
 
     <Zone>
-      <h3>Hand ({board.hand.length} cards)</h3>
-      <Battlefield>
+      <div><strong>Hand ({board.hand.length} cards)</strong></div>
+      <Hand>
         {sortedHand.map((card, i) => (
           <CardWrapper key={i} tapped={false}>
             <Card name={card.name} tapped={false} />
           </CardWrapper>
         ))}
-      </Battlefield>
+      </Hand>
     </Zone>
     </BoardContainer>
   );

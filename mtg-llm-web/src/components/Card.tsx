@@ -4,16 +4,17 @@ import { getCardByName, getPreferredPrinting } from '../scryfallApi';
 
 const CardContainer = styled.div<{ tapped: boolean, isFallback: boolean }>`
   width: 150px;
-  height: 209px; // Standard MTG card ratio
+  height: 209px;
   ${props => props.isFallback && `
     border: 2px solid #000;
     background: #f8f8f8;
     padding: 8px;
   `}
   border-radius: 10px;
-  margin: 8px;
+  margin: 0; // Changed from margin: 8px
   display: flex;
   flex-direction: column;
+  transform-origin: center center; // Added to rotate around center
   transform: ${props => props.tapped ? 'rotate(90deg)' : 'none'};
   transition: transform 0.2s;
 `;
