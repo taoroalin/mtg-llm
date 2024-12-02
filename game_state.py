@@ -97,6 +97,7 @@ class BattlefieldCard(BaseModel):
     
     @classmethod
     def from_card(cls, card: CardOrToken, owner: int, battlefield_id: int) -> "BattlefieldCard":
+        assert card in card_database['data'], f"Card {card} not found in card database. Use create_token_card_info to create a new token."
         return cls(
             battlefield_id=battlefield_id,
             card=card,

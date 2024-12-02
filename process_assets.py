@@ -66,3 +66,41 @@ for i, deck1 in enumerate(deck_files):
         
         with open(Path("assets/example_decks") / combined_name, "w") as f:
             json.dump(combined, f, indent=4)
+
+def parse_deck_text(deck_text: str) -> dict:
+    mainboard = {}
+    sideboard = {}
+    current_section = mainboard
+    
+    for line in deck_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+            
+        if line.lower() == "sideboard":
+            current_section = sideboard
+            continue
+            
+        try:
+            count, *card_parts = line.split(" ")
+            count = int(count)
+            card_name = " ".join(card_parts)
+            current_section[card_name] = count
+        except ValueError:
+            continue
+            
+    return {
+        "mainboard": mainboard,
+        "sideboard": sideboard
+    }
+    
+
+# Convert downloaded text decks to json format
+txt_deck_dir = Path("assets/downloaded_txt_decks")
+for deck_file in txt_deck_dir.glob("*.txt"):
+    deck_name = deck_file.stem + ".json"
+    deck_text = deck_file.read_text()
+    deck_data = parse_deck_text(deck_text)
+    
+    with open(Path("assets/example_decks") / deck_name, "w") as f:
+        json.dump(deck_data, f, indent=4)

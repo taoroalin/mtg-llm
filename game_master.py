@@ -28,7 +28,7 @@ python_tool_description = """Python code to execute to update game state. This c
 class GameMaster(BaseModel):
     game_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     game_state: game_state.GameState
-    agents: list["AgentInterface"]
+    agents: list["AgentInterface"] = Field(default_factory=list)
     generation_settings: dict
     step_callback: Optional[Callable[[], None]] = Field(default=None)
     past_game_states: list[game_state.GameState] = Field(default_factory=list)
@@ -45,6 +45,12 @@ class GameMaster(BaseModel):
     error_messages: list[str] = Field(default_factory=list)
     global_action_history: list[dict[str, int | str]] = Field(default_factory=list)
     code_local_vars: Optional[dict[str, Any]] = Field(default=None, exclude=True)
+    
+    metadata: dict = Field(default_factory=dict)
+    n_retries: int = Field(default=5)
+    max_turns: int = Field(default=15)
+    max_errors: int = Field(default=10)
+    max_steps: int = Field(default=40)
     
     def model_post_init(self, *args, **kwargs):
         self.player_observation_histories = [[] for _ in self.agents]
@@ -70,6 +76,15 @@ class GameMaster(BaseModel):
     async def game_loop(self):
         while self.winner is None:
             await self.step()
+            if self.game_state.turn_number > self.max_turns:
+                print(f"Game timed out after {self.max_turns} turns")
+                break    
+            if len(self.error_messages) > self.max_errors:
+                print(f"Game ended with too many errors: {len(self.error_messages)}")
+                break
+            if len(self.global_action_history) > self.max_steps:
+                print(f"Game timed out after {len(self.global_action_history)} steps")
+                break
         return self.winner
             
     async def get_player_action(self, player_index: int, available_actions: str, revealed_information: str, invalid_action_feedback: Optional[str]=None):
@@ -110,7 +125,7 @@ class GameMaster(BaseModel):
         }],
         "function_call":{"name": "advance_game_state"}}
         execution_success = False
-        while True:
+        for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=execute_action_messages,
                 **self.generation_settings,
@@ -156,7 +171,7 @@ class GameMaster(BaseModel):
         
         advance_game_state_messages.append({"role":"user", "content":"Please identify the next time an player will get priority and be able to take an action, and advance the game to that point. Advancing the game state involves setting the active_player and turn_step properties of game_state, as well as untapping permanents, drawing cards, clearing damage, resolving any triggered abilities that do not involve player choices, etc. Please skip over multiple steps if no players will have available actions, eg executing untap, upkeep, and draw steps and skipping to main phase if no player has instant speed actions available."})
         execution_success = False
-        while True:
+        for _ in range(self.n_retries):
             response = await log.llm_generate(
             messages=advance_game_state_messages,
             **self.generation_settings,
@@ -164,6 +179,10 @@ class GameMaster(BaseModel):
         )
             
             result = json.loads(response.choices[0].message.function_call.arguments)
+            required_fields = ["reasoning", "priority_player", "python_code"]
+            if not all(field in result for field in required_fields):
+                advance_game_state_messages.append({"role":"user", "content":f"The response is missing required fields. Please include all of: {required_fields}"})
+                continue
             self.priority_player = result["priority_player"]
             execution_success, execution_output = await self.execute_code_with_game_state(result["python_code"])
             if execution_success:
@@ -212,14 +231,19 @@ class GameMaster(BaseModel):
                 }
             }],
             "function_call":{"name": "extract_state_info"}}
-        response = await log.llm_generate(
-            messages=analyze_state_messages,
-            **self.generation_settings,
-            **analyze_state_tools
-        )
-        
-        result = json.loads(response.choices[0].message.function_call.arguments)
-        return result
+        for _ in range(self.n_retries):
+            response = await log.llm_generate(
+                messages=analyze_state_messages,
+                **self.generation_settings,
+                **analyze_state_tools
+            )
+            
+            result = json.loads(response.choices[0].message.function_call.arguments)
+            required_fields = ["reasoning", "priority_player", "priority_player_revealed_information", "priority_player_available_mana", "priority_player_available_actions", "winner"]
+            if not all(field in result for field in required_fields):
+                analyze_state_messages.append({"role":"user", "content":f"The response is missing required fields. Please include all of: {required_fields}"})
+                continue
+            return result
         
     async def game_master_step(self, action: str):
         if action != "":

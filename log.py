@@ -14,7 +14,7 @@ os.makedirs("database/ongoing_games", exist_ok=True)
 
 client = openai.AsyncOpenAI()
 
-prices = {"gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}, "gpt-4o-2024-05-13": {"input": 5/1_000_000, "output": 10/1_000_000}, "o1-preview": {"input": 15/1_000_000, "output": 60/1_000_000}}
+prices = {"gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}, "gpt-4o-2024-05-13": {"input": 5/1_000_000, "output": 10/1_000_000}, "o1-preview": {"input": 15/1_000_000, "output": 60/1_000_000}, "gpt-4o-mini": {"input": 0.15/1_000_000, "output": 0.6/1_000_000}}
 
 total_input_tokens = 0
 total_output_tokens = 0
