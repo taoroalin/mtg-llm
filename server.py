@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import FastAPI, WebSocket, Request, HTTPException
 from fastapi.responses import JSONResponse, Response, RedirectResponse
 from typing import Set
 import asyncio
@@ -10,6 +10,8 @@ import image_generation
 import random
 import os
 import uuid
+from pathlib import Path
+import json
 
 app = FastAPI()
 
@@ -25,19 +27,24 @@ class GameStateWebSocket:
             "max_completion_tokens": 4000
         }
         deck_files = [f for f in os.listdir("assets/example_decks") if f.endswith(".json")]
+        deck_files = ['Boros Energy.json']
         with open(f"assets/example_decks/{random.choice(deck_files)}") as f:
             deck_1 = game_state.DeckList.model_validate_json(f.read())
         with open(f"assets/example_decks/{random.choice(deck_files)}") as f:
             deck_2 = game_state.DeckList.model_validate_json(f.read())
-        new_state = game_state.GameState.init_from_decklists([deck_1, deck_2])
+        new_state = game_state.GameState.init_from_decklists([deck_1, deck_2],arena_hand_smoothing=True)
         print(new_state.model_dump_json(indent=2))
         new_agents = [agents.NaiveAgent(generation_settings=generation_settings), agents.NaiveAgent(generation_settings=generation_settings)]
         self.game_master = GameMaster(game_id=game_id, game_state=new_state, agents=new_agents, generation_settings=generation_settings)
         
         asyncio.create_task(self.game_loop())
+        self.n_steps_since_last_broadcast = 0
+        self.is_killed = False
         
     async def game_loop(self):
         while self.game_master.winner is None:
+            if self.is_killed:
+                return
             await self.broadcast_state()
             await self.game_master.step()
         return self.game_master.winner
@@ -54,6 +61,16 @@ class GameStateWebSocket:
     async def broadcast_state(self):
         if not self.game_master:
             return
+            
+        if self.is_abandoned():
+            self.n_steps_since_last_broadcast += 1
+            if self.n_steps_since_last_broadcast >= 3:
+                del games[self.game_master.game_id]
+                self.is_killed = True
+                return
+        else:
+            self.n_steps_since_last_broadcast = 0
+            
         state_json = self.game_master.truncated_json()
         disconnected = set()
         for connection in self.active_connections:
@@ -62,8 +79,39 @@ class GameStateWebSocket:
             except:
                 disconnected.add(connection)
         self.active_connections -= disconnected
+        
+    def is_abandoned(self) -> bool:
+        return not self.active_connections
 
 games:dict[str, GameStateWebSocket] = {}
+
+@app.get("/get_game/{game_id}")
+async def get_game(game_id: str):
+    ongoing_path = Path("database/ongoing_games") / f"{game_id}.json"
+    finished_path = Path("database/finished_games") / f"{game_id}.json"
+    
+    if ongoing_path.exists():
+        game_data = json.loads(ongoing_path.read_text())
+    elif finished_path.exists():
+        game_data = json.loads(finished_path.read_text())
+    else:
+        raise HTTPException(status_code=404, detail="Game not found")
+        
+    response = JSONResponse(content=game_data)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+    
+@app.get("/games")
+async def get_games():
+    ongoing_games = [f.stem for f in Path("database/ongoing_games").glob("*.json")]
+    finished_games = [f.stem for f in Path("database/finished_games").glob("*.json")]
+    
+    response = JSONResponse(content={
+        "ongoing_games": ongoing_games,
+        "finished_games": finished_games
+    })
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
 

@@ -4,6 +4,7 @@ import { GameMaster } from './types';
 import { useState, useEffect, useRef } from 'react';
 import { GameHistory } from './components/GameHistory';
 import { CodeHistory } from './components/CodeHistory';
+import { useParams, useNavigate, BrowserRouter, Routes, Route } from 'react-router-dom';
 
 const Container = styled.div`
   display: grid;
@@ -21,44 +22,82 @@ const GamePanel = styled.div`
 `;
 
 
-function App() {
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [games, setGames] = useState<{ongoing_games: string[], finished_games: string[]}>({ ongoing_games: [], finished_games: [] });
+
+  useEffect(() => {
+    fetch('http://localhost:8000/games')
+      .then(res => res.json())
+      .then(setGames);
+  }, []);
+
+  const createNewGame = async () => {
+    const response = await fetch('http://localhost:8000/create_game', { method: 'POST' });
+    const { game_id } = await response.json();
+    navigate(`/game/${game_id}`);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Magic Game Browser</h1>
+      <button onClick={createNewGame}>Create New Game</button>
+      
+      <h2>Ongoing Games</h2>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {games.ongoing_games.map(id => (
+          <button key={id} onClick={() => navigate(`/game/${id}`)}>
+            Game {id.slice(0, 8)}
+          </button>
+        ))}
+      </div>
+
+      <h2>Finished Games</h2>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {games.finished_games.map(id => (
+          <button key={id} onClick={() => navigate(`/gameview/${id}`)}>
+            Game {id.slice(0, 8)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const GameView = ({ viewOnly }: { viewOnly: boolean }) => {
+  const { gameId } = useParams();
+  // ... existing game state logic ...
   const [gameMaster, setGameMaster] = useState<GameMaster | null>(null);
-  const [gameId, setGameId] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const createGame = async () => {
-      const response = await fetch('http://localhost:8000/create_game', { method: 'POST' });
-      const { game_id } = await response.json();
-      console.log("Creating game", game_id);
-      setGameId(game_id);
-
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-
-      const ws = new WebSocket(`ws://localhost:8000/ws/${game_id}`);
+    if (!gameId) return;
+    if (viewOnly) {
+      fetch(`http://localhost:8000/get_game/${gameId}`)
+        .then(res => res.json())
+        .then(setGameMaster);
+    } else {
+      const ws = new WebSocket(`ws://localhost:8000/ws/${gameId}`);
       wsRef.current = ws;
 
-      ws.onmessage = (event) => {
-        if (wsRef.current === ws) {
-          const newGameMaster = JSON.parse(event.data);
-          setGameMaster(newGameMaster);
-        }else{
-          ws.close();
+    ws.onmessage = (event) => {
+      if (wsRef.current === ws) {
+        const newGameMaster = JSON.parse(event.data);
+        setGameMaster(newGameMaster);
+      } else {
+        ws.close();
         }
       };
     }
-    createGame();
 
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [gameId, viewOnly]);
 
-  if (!gameMaster || gameId===null) return <div>Loading...</div>;
+  if (!gameMaster || !gameId) return <div>Loading...</div>;
 
   return (
     <Container>
@@ -90,6 +129,18 @@ function App() {
 
       <GameHistory playerHistories={gameMaster.player_observation_histories} />
     </Container>
+  );
+};
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/game/:gameId" element={<GameView viewOnly={false}/>} />
+        <Route path="/gameview/:gameId" element={<GameView viewOnly={true}/>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -13,7 +13,9 @@ interface CacheEntry {
 const cardCache = new Map<string, CacheEntry>();
 
 export async function getCardByName(cardName: string) {
-  const cached = cardCache.get(cardName);
+  const cardNamefixed = cardName.split('//')[0].trim();
+    
+  const cached = cardCache.get(cardNamefixed);
   const now = Date.now();
   
   if (cached && now - cached.timestamp < CACHE_DURATION) {
@@ -21,11 +23,11 @@ export async function getCardByName(cardName: string) {
   }
 
   const response = await fetch(
-    `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`
+    `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardNamefixed)}`
   );
   const data = await response.json();
   
-  cardCache.set(cardName, { data, timestamp: now });
+  cardCache.set(cardNamefixed, { data, timestamp: now });
   return data;
 }
 
@@ -42,12 +44,13 @@ interface Printing {
 
 export async function getAllPrintsByName(cardName: string): Promise<Printing[]> {
     // For some reason non fullart query returns 0 full art printings for basic lands, need to search separately
+  const cardNamefixed = cardName.split('//')[0].trim();
   const [fullart_response, normal_response] = await Promise.all([
     fetch(
-      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"+include:extras+is:fullart&unique=art&order=usd&dir=desc`
+      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardNamefixed)}"+include:extras+is:fullart&unique=art&order=usd&dir=desc`
     ),
     fetch(
-      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"+include:extras&unique=art&order=usd&dir=desc`
+      `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardNamefixed)}"+include:extras&unique=art&order=usd&dir=desc`
     )
   ]);
   const [fullart_data, normal_data] = await Promise.all([fullart_response.json(), normal_response.json()]);

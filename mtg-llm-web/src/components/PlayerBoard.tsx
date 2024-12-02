@@ -67,8 +67,16 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
         })
       );
 
-      setSortedBattlefield(battlefieldCards.sort((a, b) => a.manaValue - b.manaValue));
-      setSortedHand(handCards.sort((a, b) => a.manaValue - b.manaValue));
+      setSortedBattlefield(battlefieldCards.sort((a, b) => 
+        a.manaValue === b.manaValue ? 
+          a.card.card.localeCompare(b.card.card) : 
+          a.manaValue - b.manaValue
+      ));
+      setSortedHand(handCards.sort((a, b) => 
+        a.manaValue === b.manaValue ? 
+          a.name.localeCompare(b.name) : 
+          a.manaValue - b.manaValue
+      ));
     };
 
     fetchAndSortCards();

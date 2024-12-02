@@ -147,6 +147,10 @@ class PlayerBoard(BaseModel):
     def cleanup_damage(self):
         for battlefield_card in self.battlefield.values():
             battlefield_card.marked_damage = 0
+            
+    def draw_cards(self, number_of_cards: int=1):
+        for _ in range(number_of_cards):
+            self.hand.append(self.library.pop())
                     
     @classmethod
     def init_from_decklist(cls, decklist: DeckList, arena_hand_smoothing:bool=False):
@@ -170,8 +174,8 @@ class PlayerBoard(BaseModel):
             random.shuffle(library)
             hand, remaining_library = library[:7], library[7:]
             hand_land_count = sum(1 for card in hand if "Land" in get_card_info(card)["types"])
-            if abs(hand_land_count - expected_land_count) >=1:
-                return hand, remaining_library
+            if abs(hand_land_count - expected_land_count) <=1:
+                return remaining_library, hand
         
     @property
     def battlefield_sorted(self) -> list[BattlefieldCard]:
@@ -194,10 +198,6 @@ class GameState(BaseModel):
     
     def shuffle_library(self, player_index: int):
         random.shuffle(self.player_boards[player_index].library)
-    
-    def draw_cards(self, player_index: int, number_of_cards: int=1):
-        for _ in range(number_of_cards):
-            self.player_boards[player_index].hand.append(self.player_boards[player_index].library.pop())
             
     def add_card_to_battlefield(self,player_index: int, card: CardOrToken):
         battlefield_card = BattlefieldCard.from_card(card, player_index, self.next_battlefield_id)
@@ -224,3 +224,27 @@ class GameState(BaseModel):
         
         self = cls(player_decklists=[decklist]*2, player_boards=player_boards)
         return self
+
+    def advance_to_step_simple(self, step: TurnStep):
+        "Advance to next step assuming no other effects. Handles untap, draw, and cleaning up damage.If there are other effects, use this function multiple times with other code in between to handle them, eg advance to upkeep, run code to handle specific upkeep effects, then advance to draw"
+        while True:
+            if self.turn_step == step:
+                return
+            current_step_index = list(TurnStep).index(self.turn_step)
+            next_step_index = (current_step_index + 1)
+            if next_step_index >= len(TurnStep):
+                next_step_index = 0
+                self.active_player_index = (self.active_player_index + 1) % len(self.player_boards)
+                print(f"advance_to_step_simple set active player to {self.active_player_index}")
+                if self.active_player_index == self.starting_player_index:
+                    self.turn_number += 1
+            self.turn_step = list(TurnStep)[next_step_index]
+            if self.turn_step == TurnStep.UNTAP:
+                self.player_boards[self.active_player_index].untap_all()
+            elif self.turn_step == TurnStep.DRAW:
+                self.draw_cards(self.active_player_index)
+            elif self.turn_step == TurnStep.CLEANUP:
+                self.cleanup_damage()
+                if len(self.player_boards[self.active_player_index].hand)>7:
+                    print(f"WARNING: Aborted at cleanup step for player {self.active_player_index}. Player has {len(self.player_boards[self.active_player_index].hand)}>7 cards in hand. Please manually handle discarding to hand size if applicable then continue.")
+                    return
