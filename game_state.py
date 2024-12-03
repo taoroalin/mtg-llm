@@ -94,6 +94,7 @@ class BattlefieldCard(BaseModel):
     effects:list[str]
     attached_to: Optional[int]
     marked_damage: int
+    entered_battlefield_this_turn: bool = Field(default=True)
     
     @classmethod
     def from_card(cls, card: CardOrToken, owner: int, battlefield_id: int) -> "BattlefieldCard":
@@ -106,7 +107,8 @@ class BattlefieldCard(BaseModel):
             tapped=False,
             effects=[],
             attached_to=None,
-            marked_damage=0
+            marked_damage=0,
+            entered_battlefield_this_turn=True
         )
     
 
@@ -179,7 +181,7 @@ class PlayerBoard(BaseModel):
         
     @property
     def battlefield_sorted(self) -> list[BattlefieldCard]:
-        return sorted(self.battlefield.values(), key=lambda card: get_card_info(card.card)["manaValue"])
+        return sorted(self.battlefield.values(), key=lambda card: (get_card_info(card.card).get('isToken', False), get_card_info(card.card).get("manaValue", 0)))
         
 class GameState(BaseModel):
     player_decklists: list[DeckList]
@@ -224,6 +226,11 @@ class GameState(BaseModel):
         
         self = cls(player_decklists=[decklist]*2, player_boards=player_boards)
         return self
+        
+    def reset_entered_battlefield_this_turn(self):
+        for player_board in self.player_boards:
+            for battlefield_card in player_board.battlefield.values():
+                battlefield_card.entered_battlefield_this_turn = False
 
     def advance_to_step_simple(self, step: TurnStep):
         "Advance to next step assuming no other effects. Handles untap, draw, and cleaning up damage.If there are other effects, use this function multiple times with other code in between to handle them, eg advance to upkeep, run code to handle specific upkeep effects, then advance to draw"
@@ -240,9 +247,10 @@ class GameState(BaseModel):
                     self.turn_number += 1
             self.turn_step = list(TurnStep)[next_step_index]
             if self.turn_step == TurnStep.UNTAP:
+                self.reset_entered_battlefield_this_turn()
                 self.player_boards[self.active_player_index].untap_all()
             elif self.turn_step == TurnStep.DRAW:
-                self.draw_cards(self.active_player_index)
+                self.player_boards[self.active_player_index].draw_cards(1)
             elif self.turn_step == TurnStep.CLEANUP:
                 self.cleanup_damage()
                 if len(self.player_boards[self.active_player_index].hand)>7:

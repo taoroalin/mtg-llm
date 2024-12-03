@@ -55,7 +55,14 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
     const fetchAndSortCards = async () => {
       const battlefieldCards = await Promise.all(
         Object.values(board.battlefield).map(async card => {
-          const { cmc:manaValue } = await getCardByName(card.card);
+          let manaValue;
+          try {
+            const cardData = await getCardByName(card.card);
+            manaValue = cardData.cmc;
+          } catch {
+            manaValue = 100;
+            console.error(`Error fetching card data for ${card.card}`);
+          }
           return { card: card, manaValue };
         })
       );

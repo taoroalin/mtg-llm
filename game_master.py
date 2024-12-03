@@ -44,7 +44,7 @@ class GameMaster(BaseModel):
     used_python_code: list[str] = Field(default_factory=list)
     error_messages: list[str] = Field(default_factory=list)
     global_action_history: list[dict[str, int | str]] = Field(default_factory=list)
-    code_local_vars: Optional[dict[str, Any]] = Field(default=None, exclude=True)
+    code_local_vars: dict[str, Any] = Field(default_factory=dict)
     
     metadata: dict = Field(default_factory=dict)
     n_retries: int = Field(default=5)
@@ -298,8 +298,7 @@ Here is all the python code that you have used to execute actions and advance ga
         f = io.StringIO()
         previous_game_state = deepcopy(self.game_state)
         global_vars = {name: getattr(game_state, name) for name in dir(game_state) if not name.startswith('_')}
-        if self.code_local_vars is None:
-            self.code_local_vars = {"game_state": self.game_state}
+        self.code_local_vars['game_state'] = self.game_state
         try:
             with redirect_stdout(f):
                 exec(code, global_vars, self.code_local_vars)

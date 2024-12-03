@@ -74,10 +74,7 @@ def parse_deck_text(deck_text: str) -> dict:
     
     for line in deck_text.splitlines():
         line = line.strip()
-        if not line:
-            continue
-            
-        if line.lower() == "sideboard":
+        if not line or line.lower() == "sideboard":
             current_section = sideboard
             continue
             

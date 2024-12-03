@@ -57,6 +57,8 @@ def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_land
         battlefield_parts.append(f"Counters: {', '.join(counters)}")
     if card.tapped:
         battlefield_parts.append("Card is tapped")
+    if 'Creature' in game_state.get_card_info(card.card).get('types', []) and card.entered_battlefield_this_turn:
+        battlefield_parts.append("Entered battlefield this turn")
     return f"Battlefield ID: {card.battlefield_id}\n" + physical_card_formatted + '\n' + '\n'.join(battlefield_parts)
 
 

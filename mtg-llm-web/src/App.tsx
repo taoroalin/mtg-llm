@@ -46,7 +46,7 @@ const HomePage = () => {
       <h2>Ongoing Games</h2>
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {games.ongoing_games.map(id => (
-          <button key={id} onClick={() => navigate(`/game/${id}`)}>
+          <button key={id} onClick={() => navigate(`/gameview/${id}`)}>
             Game {id.slice(0, 8)}
           </button>
         ))}

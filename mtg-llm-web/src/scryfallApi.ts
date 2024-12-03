@@ -1,35 +1,24 @@
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-
-interface CacheEntry {
-  data: {
-    cmc: number;
-    image_uris: {
-      normal: string;
-    };
+export function createCache<T extends (...args: any[]) => any>(fn: T) {
+  const cache = new Map<string, Awaited<ReturnType<T>>>();
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    const key = JSON.stringify(args);
+    if (!cache.has(key)) {
+      cache.set(key, await fn(...args));
+    }
+    return cache.get(key)!;
   };
-  timestamp: number;
 }
 
-const cardCache = new Map<string, CacheEntry>();
-
-export async function getCardByName(cardName: string) {
+async function getCardByNameUncached(cardName: string) {
   const cardNamefixed = cardName.split('//')[0].trim();
     
-  const cached = cardCache.get(cardNamefixed);
-  const now = Date.now();
-  
-  if (cached && now - cached.timestamp < CACHE_DURATION) {
-    return cached.data;
-  }
 
   const response = await fetch(
     `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardNamefixed)}`
   );
-  const data = await response.json();
-  
-  cardCache.set(cardNamefixed, { data, timestamp: now });
-  return data;
+  return await response.json() as {cmc: number, image_uris: {normal: string}};
 }
+export const getCardByName = createCache(getCardByNameUncached);
 
 interface Printing {
   set: string;
@@ -40,9 +29,10 @@ interface Printing {
   hasFoil: boolean;
   language: string;
   price: number;
+  flavor_name?: string;
 }
 
-export async function getAllPrintsByName(cardName: string): Promise<Printing[]> {
+async function getAllPrintsByNameUncached(cardName: string): Promise<Printing[]> {
     // For some reason non fullart query returns 0 full art printings for basic lands, need to search separately
   const cardNamefixed = cardName.split('//')[0].trim();
   const [fullart_response, normal_response] = await Promise.all([
@@ -64,10 +54,11 @@ export async function getAllPrintsByName(cardName: string): Promise<Printing[]> 
     isFullArt: card.full_art,
     hasFoil: card.foil,
     language: card.lang,
-    price: card.prices?.usd
-  }));
+    price: card.prices?.usd,
+    flavor_name: card.flavor_name
+  })).filter((p: Printing) => !p.flavor_name);
 }
-
+export const getAllPrintsByName = createCache(getAllPrintsByNameUncached);
 export function sortPrintingsByTaoPreference(printings: Printing[]) {
   const preferredArtists = [
     "Richard Kane Ferguson",
@@ -85,7 +76,6 @@ export function sortPrintingsByTaoPreference(printings: Printing[]) {
     "Rebecca Guay",
     "Seb McKinnon"
   ];
-
   return printings.sort((a, b) => {
     const getPreferenceScore = (printing: Printing) => {
       const artistIndex = preferredArtists.indexOf(printing.artist) === -10 ? -1 : preferredArtists.indexOf(printing.artist);
@@ -100,11 +90,9 @@ export function sortPrintingsByTaoPreference(printings: Printing[]) {
   });
 }
 
-export async function getPreferredPrinting(cardName: string) {
+async function getPreferredPrintingUncached(cardName: string) {
   const printings = await getAllPrintsByName(cardName);
-//   if (cardName.match(/^(Plains|Island|Swamp|Mountain|Forest)$/)) {
-//     console.log({"fullArt": printings.filter(p => p.isFullArt)[0]?.image});
-//   }
   const sorted = sortPrintingsByTaoPreference(printings);
   return sorted[0].image;
 }
+export const getPreferredPrinting = createCache(getPreferredPrintingUncached);
