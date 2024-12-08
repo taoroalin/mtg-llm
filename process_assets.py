@@ -1,6 +1,8 @@
 import json
 import os
 from pathlib import Path
+import re
+
     
 os.makedirs("assets/example_decks", exist_ok=True)
 os.makedirs("assets/example_half_decks", exist_ok=True)
@@ -20,7 +22,12 @@ atomic_cards = json.load(atomic_cards_file.open())
 
 
 print(next(iter(atomic_cards['data'].values()))[0].keys())
-atomic_cards['data'] = {name: extract_gameplay_info(card[0]) for name,card in atomic_cards['data'].items()}
+atomic_cards['data'] = {name: extract_gameplay_info(card[0]) for name,card in atomic_cards['data'].items() if not card[0].get('isFunny')}
+print(len(atomic_cards['data']))
+standard_legal = sum(1 for card in atomic_cards['data'].values() if 'standard' in card.get('legalities', []))
+pioneer_legal = sum(1 for card in atomic_cards['data'].values() if 'pioneer' in card.get('legalities', []))
+print(f"Standard legal cards: {standard_legal}")
+print(f"Pioneer legal cards: {pioneer_legal}")
 
 with open("assets/AtomicCardsGameplay.json", "w") as f:
     json.dump(atomic_cards, f, indent=4)
@@ -101,3 +108,33 @@ for deck_file in txt_deck_dir.glob("*.txt"):
     
     with open(Path("assets/example_decks") / deck_name, "w") as f:
         json.dump(deck_data, f, indent=4)
+
+def moxfield_to_name_to_printings(filename:str):
+    preferred_art_file = Path(filename)
+    card_printings = {}
+    with preferred_art_file.open('r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            match = re.match(r'\d+\s+(.+?)\s+\((\w+)\)\s+(\S+)(?:\s+(.*))?', line)
+            if match:
+                card_name = match.group(1)
+                set_code = match.group(2)
+                card_number = match.group(3)
+                annotations = match.group(4) or ''
+                printing = {'set': set_code, 'number': card_number}
+                if annotations:
+                    printing['annotations'] = annotations.strip()
+                card_printings.setdefault(card_name, []).append(printing)
+            else:
+                print(f"Line didn't match pattern: {line}")
+    return card_printings
+
+printings = moxfield_to_name_to_printings("assets/tao_preferred_art.txt")
+print("preferred art printings:")
+print(printings)
+with open("assets/tao_preferred_art_printings.json", "w") as f:
+    json.dump(printings, f, indent=4)
+with open("mtg-llm-web/src/tao_preferred_art_printings.json", "w") as f:
+    json.dump(printings, f, indent=4)

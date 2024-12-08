@@ -85,19 +85,22 @@ class GameStateWebSocket:
 
 games:dict[str, GameStateWebSocket] = {}
 
-@app.get("/get_game/{game_id}")
-async def get_game(game_id: str):
+
+def get_game_data(game_id: str):
     ongoing_path = Path("database/ongoing_games") / f"{game_id}.json"
     finished_path = Path("database/finished_games") / f"{game_id}.json"
     
     if ongoing_path.exists():
-        game_data = json.loads(ongoing_path.read_text())
+        return GameMaster.model_validate_json(ongoing_path.read_text())
     elif finished_path.exists():
-        game_data = json.loads(finished_path.read_text())
-    else:
+        return GameMaster.model_validate_json(finished_path.read_text())
+
+@app.get("/get_game/{game_id}")
+async def get_game(game_id: str):
+    result = get_game_data(game_id)
+    if result is None:
         raise HTTPException(status_code=404, detail="Game not found")
-        
-    response = JSONResponse(content=game_data)
+    response = JSONResponse(content=result.model_dump())
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
     
@@ -146,8 +149,12 @@ async def create_game(request: Request):
 
 @app.get("/playmat/{game_id}/{player_index}.png")
 async def get_playmat(game_id: str, player_index: str):
-    game = games[game_id]
-    decklist = game.game_master.game_state.player_decklists[int(player_index)]
+    game = get_game_data(game_id)
+    if game is None:
+        game = games.get(game_id)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+    decklist = game.game_state.player_decklists[int(player_index)]
     
     image_url = await image_generation.generate_playmat_for_deck(decklist)
     return RedirectResponse(url=image_url, status_code=303)

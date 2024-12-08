@@ -1,3 +1,16 @@
+import taoPreferredArtPrintings from './tao_preferred_art_printings.json';
+type PreferredArtPrinting = {
+  set: string;
+  number: string;
+}
+
+type PreferredArtPrintings = {
+  [cardName: string]: PreferredArtPrinting[];
+}
+
+const taoPreferredArtPrintingsTyped: PreferredArtPrintings = taoPreferredArtPrintings;
+
+console.log({taoPreferredArtPrintings});
 export function createCache<T extends (...args: any[]) => any>(fn: T) {
   const cache = new Map<string, Awaited<ReturnType<T>>>();
   return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
@@ -19,6 +32,14 @@ async function getCardByNameUncached(cardName: string) {
   return await response.json() as {cmc: number, image_uris: {normal: string}};
 }
 export const getCardByName = createCache(getCardByNameUncached);
+
+async function getCardBySetAndNumberUncached(set: string, number: string) {
+  const response = await fetch(
+    `https://api.scryfall.com/cards/${set.toLowerCase()}/${number}`
+  );
+  return await response.json() as {image_uris: {normal: string}};
+}
+export const getCardBySetAndNumber = createCache(getCardBySetAndNumberUncached);
 
 interface Printing {
   set: string;
@@ -91,6 +112,10 @@ export function sortPrintingsByTaoPreference(printings: Printing[]) {
 }
 
 async function getPreferredPrintingUncached(cardName: string) {
+  if (taoPreferredArtPrintingsTyped[cardName]) {
+    const printing = await getCardBySetAndNumber(taoPreferredArtPrintingsTyped[cardName][0].set, taoPreferredArtPrintingsTyped[cardName][0].number);
+    return printing.image_uris.normal;
+  }
   const printings = await getAllPrintsByName(cardName);
   const sorted = sortPrintingsByTaoPreference(printings);
   return sorted[0].image;

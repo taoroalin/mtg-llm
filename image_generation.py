@@ -13,11 +13,11 @@ async def generate_playmat_for_deck(decklist: DeckList) -> bytes:
     
     # Generate prompt using GPT-4
     prompt_response = await llm_generate(
-        model="gpt-4o-2024-08-06",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
-                "content": "You are a creative director designing Magic: The Gathering playmats. Generate a detailed image prompt for DALL-E based on the deck's cards and themes."
+                "content": "You are a creative director designing Magic: The Gathering playmats. Generate an image prompt for DALL-E based on the deck's cards and themes."
             },
             {
                 "role": "user",

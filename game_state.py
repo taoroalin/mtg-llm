@@ -81,8 +81,8 @@ class TurnStep(str, Enum):
 
 class DeckList(BaseModel):
     "Decklist for a player at the beginning of the game. Mapping from card name to count."
-    mainboard: dict[Card, int]
-    sideboard: dict[Card, int]
+    mainboard: dict[Card, int] # card name to count
+    sideboard: dict[Card, int] # card name to count
     
 class BattlefieldCard(BaseModel):
     "A card on the battlefield. Has an ID which other cards can reference."

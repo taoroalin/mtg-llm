@@ -29,6 +29,7 @@ export interface BattlefieldCard {
   effects: string[];
   attached_to: number | null;
   marked_damage: number;
+  entered_battlefield_this_turn: boolean;
 }
 
 export interface PlayerBoard {

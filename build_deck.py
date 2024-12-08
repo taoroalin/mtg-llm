@@ -7,6 +7,11 @@ import contextlib
 import asyncio
 import os
 import prompting
+from typing import Callable
+from pydantic import BaseModel
+import nest_asyncio
+
+nest_asyncio.apply()
 
 def compute_decklist_stats(decklist: game_state.DeckList) -> dict:
     total_cards = sum(decklist.mainboard.values())
@@ -94,7 +99,7 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
                         },
                         "python_code": {
                             "type": "string",
-                            "description": "Python code to build a decklist. This code will execute in a context with `all_cards`, a dict from card name to card info, and `decklist` defined. This code should modify `decklist` in place. Print information for new cards you are considering adding to the decklist."
+                            "description": "Python code to build a decklist. This code will execute in a context with `all_cards`, a dict from card name to card info, and `decklist` defined. This code should modify `decklist` in place. Print information for new cards you are considering adding to the decklist. A function `query_cards_with_llm` is also available, which takes in a natural language query and a list of cards and returns a list of card names that match the query. The function uses a fast language model and is more efficient than reading cards manually. You often want to filter for all hard criteria like legality and cost, then use `query_cards_with_llm` to find cards that match a more qualitative query."
                         },
                     },
                     "required": ["reasoning", "is_finished", "python_code"]
@@ -122,13 +127,15 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
             conversation.append({"role": "user", "content": f"Please improve your decklist. Here's my review of the decklist:\n{review}"})
             review_round += 1
 
-        local_vars = {'all_cards': all_cards, 'decklist': decklist}
+        local_vars = {'all_cards': all_cards, 'decklist': decklist, 'query_cards_with_llm': query_cards_with_llm_sync}
         try:
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
                 exec(arguments["python_code"], local_vars)
-            if output.getvalue():
-                conversation.append({"role": "user", "content": f"Code output: {output.getvalue()}"})
+            code_output_string = output.getvalue()
+            if code_output_string:
+                code_output_string = truncate_string(code_output_string, 20_000)
+                conversation.append({"role": "user", "content": f"Code output: {code_output_string}"})
             conversation.append({"role": "user", "content": f"Decklist: {decklist}\nDecklist Stats: {compute_decklist_stats(decklist)}"})
             card_details = "\n".join([prompting.format_card_full(card) for card in decklist.mainboard.keys()])
             conversation.append({"role": "user", "content": f"Card details: {card_details}"})
@@ -138,6 +145,49 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
             print(error_msg)
             conversation.append({"role": "user", "content": error_msg})
     return decklist
+    
+def truncate_string(s:str, max_length:int) -> str:
+    return (s[:max_length//2-20]+"...output was over 20k characters, truncated..." + s[max_length//2-20:]) if len(s) > max_length else s
+
+def get_all_cards_prompt():
+    return "\n".join([prompting.format_card_full(card) for card in game_state.card_database['data'].keys()])
+    
+
+async def filter_cards_model(cards:list[str], query:str, model='gpt-4o-mini') -> list[str]:
+    print("filtering cards with model", model, len(cards), "cards", query)
+    cards_prompt = "\n\n".join(cards)
+    conversation = [
+        {"role": "user", "content": f"Filter the following cards to only include cards that match the query: {query}\n\n{cards_prompt}\n\nPlease respond in json like {{thinking:string, cards:[string]}}, step by step thoughts followed by a list of only card names that match the query in order shown. Respond only in json with no surrounding text."}
+    ]
+    print(conversation[0]['content'])
+    response = await log.llm_generate(model=model, messages=conversation, response_format={ "type": "json_object" })
+    print(response.choices[0].message.content)
+    return json.loads(response.choices[0].message.content)['cards']
+
+async def query_cards_with_llm(query:str, card_names:list[str])->list[str]:
+    prompts = [prompting.format_card_full(card) for card in card_names]
+    batch_size = 3 * 128000
+    batches = []
+    current_batch = []
+    current_length = 0
+    
+    for prompt in prompts:
+        prompt_length = len(prompt)
+        if current_length + prompt_length > batch_size:
+            batches.append(current_batch)
+            current_batch = [prompt]
+            current_length = prompt_length
+        else:
+            current_batch.append(prompt)
+            current_length += prompt_length
+            
+    if current_batch:
+        batches.append(current_batch)
+    print("filtering cards in ", len(batches), " batches")
+    return [item for batch in await asyncio.gather(*[filter_cards_model(batch, query) for batch in batches]) for item in batch]
+    
+def query_cards_with_llm_sync(query:str, card_names:list[str])->list[str]:
+    return asyncio.run(query_cards_with_llm(query, card_names))
     
 async def review_decklist(decklist: game_state.DeckList, request: str) -> str:
     card_details = "\n".join([prompting.format_card_full(card) for card in decklist.mainboard.keys()])
@@ -165,6 +215,8 @@ A deck should not use any suboptimal cards in the given format. For instance, th
 A good deck has enough support for its synergy cards. For instance, a deck with 8 cards that assist other Merfolk cards needs ~16 total Merfolk cards in order for the Merfolk synergy cards to be worthwhile. If a deck request requires a specific synergy, you may need to prioritize synergy over general card quality.
 
 Brainstorm what decks this deck will likely play against, and consider whether it has the tools to win against them.
+
+Note: only suggest specific cards if they are well known to be strong, otherwise let the user search for cards that meet your criteria.
 """
             )
         },
@@ -188,9 +240,16 @@ Brainstorm what decks this deck will likely play against, and consider whether i
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    decklist = asyncio.run(generate_deck_from_request("Please make a pioneer legal White devotion deck"))
-    print(decklist)
+    # print(len(game_state.card_database['data']), len(get_all_cards_prompt())) # 30813 6200714
+    # bear_filter = lambda card: 'Bear' in card['subtypes']
+    # queried_names = asyncio.run(query_cards("Find all cards that might be played in a power level 7 EDH deck", bear_filter))
+    # for name in queried_names:
+    #     print(prompting.format_card_full(name))
+    # exit()
+
+    decklist = asyncio.run(generate_deck_from_request("Please make a Standard legal izzet Otter themed deck for q4 2024"))
+    print(decklist) 
     print(compute_decklist_stats(decklist))
     os.makedirs("assets/built_decks", exist_ok=True)
-    with open(f"assets/built_decks/white_devotion_deck.json", "w") as f:
+    with open(f"assets/built_decks/izzet_otter_deck.json", "w") as f:
         json.dump(decklist.model_dump(), f, indent=4)

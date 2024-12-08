@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 
 const CodePanel = styled.div`
-  padding: 15px;
+  padding: 8px;
   border-radius: 8px;
   height: calc(100vh - 40px);
   overflow-y: auto;

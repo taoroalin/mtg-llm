@@ -106,8 +106,7 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
           <CardWrapper key={card.battlefield_id} tapped={card.tapped}>
             <Card 
               name={card.card}
-              tapped={card.tapped}
-              damage={card.marked_damage}
+              battlefield_card={card}
             />
           </CardWrapper>
         ))}
@@ -119,7 +118,7 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
       <Hand>
         {sortedHand.map((card, i) => (
           <CardWrapper key={i} tapped={false}>
-            <Card name={card.name} tapped={false} />
+            <Card name={card.name} />
           </CardWrapper>
         ))}
       </Hand>

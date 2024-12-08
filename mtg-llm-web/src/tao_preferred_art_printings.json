@@ -1,0 +1,1933 @@
+{
+    "Abandoned Campground": [
+        {
+            "set": "DSK",
+            "number": "255"
+        }
+    ],
+    "Abhorrent Oculus": [
+        {
+            "set": "DSK",
+            "number": "42"
+        }
+    ],
+    "Abrupt Decay": [
+        {
+            "set": "WMC",
+            "number": "2016",
+            "annotations": "*F*"
+        }
+    ],
+    "Abstruse Appropriation": [
+        {
+            "set": "MH3",
+            "number": "342"
+        }
+    ],
+    "Academy Ruins": [
+        {
+            "set": "SLD",
+            "number": "1506"
+        }
+    ],
+    "Accursed Witch // Infectious Curse": [
+        {
+            "set": "SOI",
+            "number": "97"
+        }
+    ],
+    "Acolyte of Xathrid": [
+        {
+            "set": "M10",
+            "number": "83"
+        }
+    ],
+    "Adeline, Resplendent Cathar": [
+        {
+            "set": "MID",
+            "number": "312"
+        }
+    ],
+    "Admonition Angel": [
+        {
+            "set": "SLD",
+            "number": "154"
+        }
+    ],
+    "Adorned Pouncer": [
+        {
+            "set": "PHOU",
+            "number": "2",
+            "annotations": "*F*"
+        }
+    ],
+    "Adventurous Impulse": [
+        {
+            "set": "STA",
+            "number": "49"
+        }
+    ],
+    "Alania, Divergent Storm": [
+        {
+            "set": "BLB",
+            "number": "327"
+        }
+    ],
+    "Alesha, Who Smiles at Death": [
+        {
+            "set": "SLD",
+            "number": "1007"
+        }
+    ],
+    "All Is Dust": [
+        {
+            "set": "SLD",
+            "number": "268"
+        }
+    ],
+    "Aminatou, the Fateshifter": [
+        {
+            "set": "OC18",
+            "number": "37",
+            "annotations": "*F*"
+        }
+    ],
+    "Ancient Cornucopia": [
+        {
+            "set": "BIG",
+            "number": "46"
+        }
+    ],
+    "Angelic Renewal": [
+        {
+            "set": "UMA",
+            "number": "10"
+        }
+    ],
+    "Answered Prayers": [
+        {
+            "set": "MH1",
+            "number": "2"
+        }
+    ],
+    "Approach of the Second Sun": [
+        {
+            "set": "Q06",
+            "number": "1"
+        }
+    ],
+    "Aragorn, King of Gondor": [
+        {
+            "set": "LTC",
+            "number": "448"
+        }
+    ],
+    "Aragorn, the Uniter": [
+        {
+            "set": "LTR",
+            "number": "317"
+        }
+    ],
+    "Archaeomancer": [
+        {
+            "set": "SLD",
+            "number": "283"
+        }
+    ],
+    "Archfiend of Ifnir": [
+        {
+            "set": "AKH",
+            "number": "78"
+        }
+    ],
+    "Arclight Phoenix": [
+        {
+            "set": "SLC",
+            "number": "2018"
+        }
+    ],
+    "As Foretold": [
+        {
+            "set": "WOT",
+            "number": "14"
+        }
+    ],
+    "Ash Barrens": [
+        {
+            "set": "SLD",
+            "number": "469",
+            "annotations": "*F*"
+        }
+    ],
+    "Ashling the Pilgrim": [
+        {
+            "set": "DMC",
+            "number": "119"
+        }
+    ],
+    "Ashling, the Extinguisher": [
+        {
+            "set": "EVE",
+            "number": "33"
+        }
+    ],
+    "Ashnod's Altar": [
+        {
+            "set": "SLD",
+            "number": "1679"
+        }
+    ],
+    "Auramancer": [
+        {
+            "set": "A25",
+            "number": "6"
+        }
+    ],
+    "Auspicious Starrix": [
+        {
+            "set": "IKO",
+            "number": "294"
+        }
+    ],
+    "Ayara, First of Locthwain": [
+        {
+            "set": "MUL",
+            "number": "13"
+        }
+    ],
+    "Azorius Arrester": [
+        {
+            "set": "RVR",
+            "number": "5"
+        }
+    ],
+    "Balance": [
+        {
+            "set": "PLST",
+            "number": "EMA-2"
+        }
+    ],
+    "Bandage": [
+        {
+            "set": "STH",
+            "number": "1"
+        }
+    ],
+    "Bankrupt in Blood": [
+        {
+            "set": "RNA",
+            "number": "62"
+        }
+    ],
+    "Barad-d\u00fbr": [
+        {
+            "set": "LTR",
+            "number": "704"
+        }
+    ],
+    "Basri Ket": [
+        {
+            "set": "M21",
+            "number": "286"
+        }
+    ],
+    "Basri's Acolyte": [
+        {
+            "set": "M21",
+            "number": "287"
+        }
+    ],
+    "Beguiler of Wills": [
+        {
+            "set": "DKA",
+            "number": "28"
+        }
+    ],
+    "Beza, the Bounding Spring": [
+        {
+            "set": "BLB",
+            "number": "2"
+        }
+    ],
+    "Birds of Paradise": [
+        {
+            "set": "PM11",
+            "number": "165\u2605",
+            "annotations": "*F*"
+        }
+    ],
+    "Bitterblossom": [
+        {
+            "set": "2X2",
+            "number": "69"
+        }
+    ],
+    "Bleeding Woods": [
+        {
+            "set": "DSK",
+            "number": "257"
+        }
+    ],
+    "Blessed Reincarnation": [
+        {
+            "set": "DTK",
+            "number": "47"
+        }
+    ],
+    "Blood Crypt": [
+        {
+            "set": "SLD",
+            "number": "125"
+        },
+        {
+            "set": "UNF",
+            "number": "279"
+        }
+    ],
+    "Blood for Bones": [
+        {
+            "set": "M20",
+            "number": "89"
+        }
+    ],
+    "Blood Moon": [
+        {
+            "set": "WOT",
+            "number": "40"
+        }
+    ],
+    "Blossoming Sands": [
+        {
+            "set": "BLB",
+            "number": "396"
+        }
+    ],
+    "Blue Sun's Zenith": [
+        {
+            "set": "STA",
+            "number": "12"
+        }
+    ],
+    "Bookwurm": [
+        {
+            "set": "STX",
+            "number": "123"
+        }
+    ],
+    "Breeding Pool": [
+        {
+            "set": "UNF",
+            "number": "286"
+        }
+    ],
+    "Breya, Etherium Shaper": [
+        {
+            "set": "SLD",
+            "number": "454",
+            "annotations": "*F*"
+        }
+    ],
+    "Brilliant Restoration": [
+        {
+            "set": "NEO",
+            "number": "363"
+        }
+    ],
+    "Bruna, the Fading Light": [
+        {
+            "set": "SLD",
+            "number": "1336",
+            "annotations": "*F*"
+        },
+        {
+            "set": "EMN",
+            "number": "15a"
+        }
+    ],
+    "Brushfire Elemental": [
+        {
+            "set": "ZNR",
+            "number": "311"
+        }
+    ],
+    "Brushland": [
+        {
+            "set": "BRO",
+            "number": "298"
+        }
+    ],
+    "Burgeoning": [
+        {
+            "set": "SLD",
+            "number": "408"
+        }
+    ],
+    "Cabal Coffers": [
+        {
+            "set": "MH2",
+            "number": "325"
+        }
+    ],
+    "Call to Mind": [
+        {
+            "set": "M11",
+            "number": "47"
+        }
+    ],
+    "Calming Verse": [
+        {
+            "set": "PCY",
+            "number": "110"
+        }
+    ],
+    "Campus Renovation": [
+        {
+            "set": "MAT",
+            "number": "77"
+        }
+    ],
+    "Captain Lannery Storm": [
+        {
+            "set": "MUL",
+            "number": "20"
+        }
+    ],
+    "Captain Sisay": [
+        {
+            "set": "SLD",
+            "number": "51",
+            "annotations": "*F*"
+        }
+    ],
+    "Carrot Cake": [
+        {
+            "set": "BLB",
+            "number": "7"
+        }
+    ],
+    "Caves of Koilos": [
+        {
+            "set": "DMU",
+            "number": "378"
+        }
+    ],
+    "Channel": [
+        {
+            "set": "IMA",
+            "number": "157"
+        }
+    ],
+    "Child of Alara": [
+        {
+            "set": "SLD",
+            "number": "1599"
+        }
+    ],
+    "Chord of Calling": [
+        {
+            "set": "SLD",
+            "number": "1595"
+        }
+    ],
+    "Chromium": [
+        {
+            "set": "SLD",
+            "number": "1068",
+            "annotations": "*F*"
+        }
+    ],
+    "Coat of Arms": [
+        {
+            "set": "SLD",
+            "number": "1712"
+        }
+    ],
+    "Command Beacon": [
+        {
+            "set": "SLD",
+            "number": "470",
+            "annotations": "*F*"
+        }
+    ],
+    "Command Tower": [
+        {
+            "set": "SLD",
+            "number": "1697"
+        }
+    ],
+    "Conclave Naturalists": [
+        {
+            "set": "PORI",
+            "number": "171"
+        }
+    ],
+    "Conclave Tribunal": [
+        {
+            "set": "SCD",
+            "number": "14"
+        }
+    ],
+    "Conqueror's Flail": [
+        {
+            "set": "SLD",
+            "number": "1571"
+        }
+    ],
+    "Control Magic": [
+        {
+            "set": "EMA",
+            "number": "42"
+        }
+    ],
+    "Corpseberry Cultivator": [
+        {
+            "set": "BLB",
+            "number": "210"
+        }
+    ],
+    "Counterspell": [
+        {
+            "set": "MH2",
+            "number": "308"
+        }
+    ],
+    "Cruelclaw's Heist": [
+        {
+            "set": "BLB",
+            "number": "310"
+        }
+    ],
+    "Crux of Fate": [
+        {
+            "set": "STA",
+            "number": "25"
+        }
+    ],
+    "Cultivate": [
+        {
+            "set": "STA",
+            "number": "51"
+        }
+    ],
+    "Cuombajj Witches": [
+        {
+            "set": "CMR",
+            "number": "116"
+        }
+    ],
+    "Damnation": [
+        {
+            "set": "SLD",
+            "number": "121"
+        }
+    ],
+    "Dark Ritual": [
+        {
+            "set": "STA",
+            "number": "26"
+        }
+    ],
+    "Day of Judgment": [
+        {
+            "set": "STA",
+            "number": "2"
+        }
+    ],
+    "Deathsprout": [
+        {
+            "set": "WAR",
+            "number": "189"
+        }
+    ],
+    "Debt to the Deathless": [
+        {
+            "set": "RVR",
+            "number": "364"
+        }
+    ],
+    "Deliver Unto Evil": [
+        {
+            "set": "WAR",
+            "number": "85"
+        }
+    ],
+    "Demonic Counsel": [
+        {
+            "set": "DSK",
+            "number": "310"
+        }
+    ],
+    "Deserted Beach": [
+        {
+            "set": "MID",
+            "number": "281"
+        }
+    ],
+    "Desolate Lighthouse": [
+        {
+            "set": "SLD",
+            "number": "352"
+        }
+    ],
+    "Dictate of Heliod": [
+        {
+            "set": "DDO",
+            "number": "8"
+        }
+    ],
+    "Disciple of Grace": [
+        {
+            "set": "USG",
+            "number": "10"
+        }
+    ],
+    "Dismember": [
+        {
+            "set": "PLST",
+            "number": "MM2-79"
+        }
+    ],
+    "Dive Down": [
+        {
+            "set": "XLN",
+            "number": "53"
+        }
+    ],
+    "Donal, Herald of Wings": [
+        {
+            "set": "VOC",
+            "number": "3"
+        }
+    ],
+    "Drag to the Roots": [
+        {
+            "set": "DSK",
+            "number": "213"
+        }
+    ],
+    "Dragon Mantle": [
+        {
+            "set": "WOT",
+            "number": "41"
+        }
+    ],
+    "Dreamroot Cascade": [
+        {
+            "set": "VOW",
+            "number": "282"
+        }
+    ],
+    "Duskborne Skymarcher": [
+        {
+            "set": "XLN",
+            "number": "9"
+        }
+    ],
+    "Eldrazi Monument": [
+        {
+            "set": "PLST",
+            "number": "CMA-216"
+        }
+    ],
+    "Eliminate": [
+        {
+            "set": "STA",
+            "number": "30"
+        }
+    ],
+    "Eluge, the Shoreless Sea": [
+        {
+            "set": "BLB",
+            "number": "49"
+        }
+    ],
+    "Emberheart Challenger": [
+        {
+            "set": "BLB",
+            "number": "315"
+        }
+    ],
+    "Emrakul, the Aeons Torn": [
+        {
+            "set": "2X2",
+            "number": "1"
+        }
+    ],
+    "Emrakul, the Promised End": [
+        {
+            "set": "EMN",
+            "number": "6"
+        }
+    ],
+    "Enchanted Evening": [
+        {
+            "set": "SLD",
+            "number": "122"
+        }
+    ],
+    "Endurance": [
+        {
+            "set": "MH2",
+            "number": "317"
+        }
+    ],
+    "Enduring Curiosity": [
+        {
+            "set": "DSK",
+            "number": "371"
+        }
+    ],
+    "Enduring Vitality": [
+        {
+            "set": "DSK",
+            "number": "381"
+        }
+    ],
+    "Enter the Infinite": [
+        {
+            "set": "GTC",
+            "number": "34"
+        }
+    ],
+    "Entity Tracker": [
+        {
+            "set": "DSK",
+            "number": "307"
+        }
+    ],
+    "Essence Scatter": [
+        {
+            "set": "IKO",
+            "number": "49"
+        }
+    ],
+    "Essence Warden": [
+        {
+            "set": "PLST",
+            "number": "CMA-106"
+        }
+    ],
+    "Eternal Witness": [
+        {
+            "set": "CM2",
+            "number": "136"
+        }
+    ],
+    "Ethereal Armor": [
+        {
+            "set": "DSK",
+            "number": "7"
+        }
+    ],
+    "Fabled Passage": [
+        {
+            "set": "BLB",
+            "number": "367"
+        },
+        {
+            "set": "SLD",
+            "number": "471",
+            "annotations": "*F*"
+        }
+    ],
+    "Farewell": [
+        {
+            "set": "MKC",
+            "number": "64"
+        }
+    ],
+    "Fecundity": [
+        {
+            "set": "UMA",
+            "number": "165"
+        }
+    ],
+    "Field of the Dead": [
+        {
+            "set": "M20",
+            "number": "247"
+        }
+    ],
+    "Fiend Hunter": [
+        {
+            "set": "C13",
+            "number": "11"
+        }
+    ],
+    "Forest": [
+        {
+            "set": "DSK",
+            "number": "276"
+        },
+        {
+            "set": "FDN",
+            "number": "291"
+        },
+        {
+            "set": "ACR",
+            "number": "109"
+        },
+        {
+            "set": "SLD",
+            "number": "1403"
+        },
+        {
+            "set": "BRO",
+            "number": "287"
+        },
+        {
+            "set": "BRO",
+            "number": "286"
+        },
+        {
+            "set": "SLD",
+            "number": "452"
+        },
+        {
+            "set": "SNC",
+            "number": "281"
+        },
+        {
+            "set": "SLD",
+            "number": "363"
+        },
+        {
+            "set": "THB",
+            "number": "254"
+        },
+        {
+            "set": "2XM",
+            "number": "381"
+        },
+        {
+            "set": "HOU",
+            "number": "189"
+        },
+        {
+            "set": "ZEN",
+            "number": "248"
+        },
+        {
+            "set": "MH3",
+            "number": "308"
+        }
+    ],
+    "Gaea's Blessing": [
+        {
+            "set": "EMA",
+            "number": "168"
+        }
+    ],
+    "Gavony Township": [
+        {
+            "set": "SLD",
+            "number": "357"
+        }
+    ],
+    "Gemstone Mine": [
+        {
+            "set": "DMR",
+            "number": "455"
+        }
+    ],
+    "Gifts Ungiven": [
+        {
+            "set": "CHK",
+            "number": "62"
+        }
+    ],
+    "Gisela, Blade of Goldnight": [
+        {
+            "set": "CMM",
+            "number": "338"
+        }
+    ],
+    "Gisela, the Broken Blade": [
+        {
+            "set": "SLD",
+            "number": "1387"
+        }
+    ],
+    "Gladecover Scout": [
+        {
+            "set": "M14",
+            "number": "176"
+        }
+    ],
+    "Glimmerburst": [
+        {
+            "set": "DSK",
+            "number": "62"
+        }
+    ],
+    "Glissa, the Traitor": [
+        {
+            "set": "MBS",
+            "number": "96"
+        }
+    ],
+    "Goblin Spymaster": [
+        {
+            "set": "CLB",
+            "number": "795"
+        }
+    ],
+    "Godless Shrine": [
+        {
+            "set": "UNF",
+            "number": "282"
+        }
+    ],
+    "Growing Ranks": [
+        {
+            "set": "C19",
+            "number": "193"
+        }
+    ],
+    "Growth Spiral": [
+        {
+            "set": "M3C",
+            "number": "265"
+        }
+    ],
+    "Hallowed Fountain": [
+        {
+            "set": "UNF",
+            "number": "277"
+        }
+    ],
+    "Hanna, Ship's Navigator": [
+        {
+            "set": "A25",
+            "number": "206"
+        }
+    ],
+    "Harness Infinity": [
+        {
+            "set": "STX",
+            "number": "191"
+        }
+    ],
+    "Haunted Ridge": [
+        {
+            "set": "MID",
+            "number": "282"
+        }
+    ],
+    "Healer of the Pride": [
+        {
+            "set": "PLST",
+            "number": "M13-19"
+        }
+    ],
+    "Helga, Skittish Seer": [
+        {
+            "set": "BLB",
+            "number": "217"
+        }
+    ],
+    "Henrika Domnathi // Henrika, Infernal Seer": [
+        {
+            "set": "VOW",
+            "number": "335"
+        }
+    ],
+    "Hostage Taker": [
+        {
+            "set": "LCC",
+            "number": "271"
+        }
+    ],
+    "Indatha Triome": [
+        {
+            "set": "IKO",
+            "number": "309"
+        }
+    ],
+    "Inga and Esika": [
+        {
+            "set": "PMOM",
+            "number": "229p"
+        }
+    ],
+    "Ink-Eyes, Servant of Oni": [
+        {
+            "set": "PLST",
+            "number": "BOK-71"
+        }
+    ],
+    "Innocent Traveler // Malicious Invader": [
+        {
+            "set": "VOW",
+            "number": "336"
+        }
+    ],
+    "Island": [
+        {
+            "set": "FDN",
+            "number": "285"
+        },
+        {
+            "set": "DSK",
+            "number": "273"
+        },
+        {
+            "set": "BLB",
+            "number": "266"
+        },
+        {
+            "set": "P23",
+            "number": "7",
+            "annotations": "*F*"
+        },
+        {
+            "set": "UNF",
+            "number": "241"
+        },
+        {
+            "set": "SNC",
+            "number": "274"
+        },
+        {
+            "set": "SLD",
+            "number": "360"
+        },
+        {
+            "set": "THB",
+            "number": "251"
+        },
+        {
+            "set": "UST",
+            "number": "213"
+        },
+        {
+            "set": "ZEN",
+            "number": "236"
+        },
+        {
+            "set": "MH3",
+            "number": "305"
+        }
+    ],
+    "Ivy Dancer": [
+        {
+            "set": "RAV",
+            "number": "171"
+        }
+    ],
+    "Jukai Messenger": [
+        {
+            "set": "CHK",
+            "number": "218"
+        }
+    ],
+    "Jungle Shrine": [
+        {
+            "set": "MOC",
+            "number": "408"
+        }
+    ],
+    "Junkblade Bruiser": [
+        {
+            "set": "BLB",
+            "number": "220"
+        }
+    ],
+    "Kaito, Bane of Nightmares": [
+        {
+            "set": "DSK",
+            "number": "354"
+        }
+    ],
+    "Karplusan Forest": [
+        {
+            "set": "DMU",
+            "number": "379"
+        }
+    ],
+    "Katilda, Dawnhart Martyr // Katilda's Rising Dawn": [
+        {
+            "set": "VOW",
+            "number": "317"
+        }
+    ],
+    "Kenessos, Priest of Thassa": [
+        {
+            "set": "J22",
+            "number": "13"
+        }
+    ],
+    "Ketria Triome": [
+        {
+            "set": "IKO",
+            "number": "310"
+        }
+    ],
+    "Kor Spiritdancer": [
+        {
+            "set": "BBD",
+            "number": "93"
+        }
+    ],
+    "Life from the Loam": [
+        {
+            "set": "MMA",
+            "number": "153"
+        }
+    ],
+    "Lightshell Duo": [
+        {
+            "set": "BLB",
+            "number": "56"
+        }
+    ],
+    "Liliana of the Veil": [
+        {
+            "set": "ISD",
+            "number": "105"
+        }
+    ],
+    "Liliana, Untouched by Death": [
+        {
+            "set": "SCD",
+            "number": "84"
+        }
+    ],
+    "Lilypad Village": [
+        {
+            "set": "BLB",
+            "number": "255"
+        }
+    ],
+    "Linvala, Shield of Sea Gate": [
+        {
+            "set": "ZNR",
+            "number": "226"
+        }
+    ],
+    "Lotus Cobra": [
+        {
+            "set": "PGPX",
+            "number": "2012b",
+            "annotations": "*F*"
+        }
+    ],
+    "Lumra, Bellow of the Woods": [
+        {
+            "set": "BLB",
+            "number": "183"
+        }
+    ],
+    "Lunar Convocation": [
+        {
+            "set": "BLB",
+            "number": "366"
+        }
+    ],
+    "Maha, Its Feathers Night": [
+        {
+            "set": "BLB",
+            "number": "100"
+        }
+    ],
+    "Mana Confluence": [
+        {
+            "set": "SLD",
+            "number": "1012a"
+        }
+    ],
+    "Martyr's Bond": [
+        {
+            "set": "SS2",
+            "number": "2"
+        }
+    ],
+    "Maze of Ith": [
+        {
+            "set": "DMR",
+            "number": "456"
+        }
+    ],
+    "Meathook Massacre II": [
+        {
+            "set": "DSK",
+            "number": "108"
+        }
+    ],
+    "Mind Rot": [
+        {
+            "set": "M20",
+            "number": "108"
+        }
+    ],
+    "Mire Triton": [
+        {
+            "set": "SCD",
+            "number": "92"
+        }
+    ],
+    "Misty Rainforest": [
+        {
+            "set": "SLU",
+            "number": "5"
+        }
+    ],
+    "Mockingbird": [
+        {
+            "set": "BLB",
+            "number": "61"
+        }
+    ],
+    "Moorland Haunt": [
+        {
+            "set": "SLD",
+            "number": "349"
+        }
+    ],
+    "Mountain": [
+        {
+            "set": "DSK",
+            "number": "275"
+        },
+        {
+            "set": "BLB",
+            "number": "275"
+        },
+        {
+            "set": "ACR",
+            "number": "107"
+        },
+        {
+            "set": "MKM",
+            "number": "275"
+        },
+        {
+            "set": "PL24",
+            "number": "5",
+            "annotations": "*F*"
+        },
+        {
+            "set": "MOM",
+            "number": "288"
+        },
+        {
+            "set": "UNF",
+            "number": "243"
+        },
+        {
+            "set": "DMU",
+            "number": "280"
+        },
+        {
+            "set": "NEO",
+            "number": "299"
+        },
+        {
+            "set": "SNC",
+            "number": "279"
+        },
+        {
+            "set": "2XM",
+            "number": "379"
+        },
+        {
+            "set": "THB",
+            "number": "253"
+        },
+        {
+            "set": "UST",
+            "number": "215"
+        },
+        {
+            "set": "ZEN",
+            "number": "242"
+        },
+        {
+            "set": "BFZ",
+            "number": "267"
+        },
+        {
+            "set": "VOW",
+            "number": "274"
+        }
+    ],
+    "Mythos of Brokkos": [
+        {
+            "set": "IKO",
+            "number": "168"
+        }
+    ],
+    "Mythos of Illuna": [
+        {
+            "set": "IKO",
+            "number": "58"
+        }
+    ],
+    "Mythos of Nethroi": [
+        {
+            "set": "IKO",
+            "number": "97"
+        }
+    ],
+    "Mythos of Snapdax": [
+        {
+            "set": "IKO",
+            "number": "24"
+        }
+    ],
+    "Mythos of Vadrok": [
+        {
+            "set": "IKO",
+            "number": "127"
+        }
+    ],
+    "Niko, Light of Hope": [
+        {
+            "set": "DSK",
+            "number": "355"
+        }
+    ],
+    "Oakhollow Village": [
+        {
+            "set": "BLB",
+            "number": "258"
+        }
+    ],
+    "Olivia, Crimson Bride": [
+        {
+            "set": "VOW",
+            "number": "343"
+        }
+    ],
+    "Omnivorous Flytrap": [
+        {
+            "set": "DSK",
+            "number": "322"
+        }
+    ],
+    "Overlord of the Floodpits": [
+        {
+            "set": "DSK",
+            "number": "373"
+        }
+    ],
+    "Paradise Mantle": [
+        {
+            "set": "PLST",
+            "number": "MMA-211"
+        }
+    ],
+    "Peculiar Lighthouse": [
+        {
+            "set": "DSK",
+            "number": "265"
+        }
+    ],
+    "Peer Past the Veil": [
+        {
+            "set": "DSK",
+            "number": "226"
+        }
+    ],
+    "Plains": [
+        {
+            "set": "DSK",
+            "number": "272"
+        },
+        {
+            "set": "FDN",
+            "number": "282"
+        },
+        {
+            "set": "SLP",
+            "number": "31"
+        },
+        {
+            "set": "BLB",
+            "number": "263"
+        },
+        {
+            "set": "SLD",
+            "number": "1513",
+            "annotations": "*F*"
+        },
+        {
+            "set": "LCI",
+            "number": "287"
+        },
+        {
+            "set": "SLD",
+            "number": "1468"
+        },
+        {
+            "set": "MOM",
+            "number": "282"
+        },
+        {
+            "set": "ONE",
+            "number": "262"
+        },
+        {
+            "set": "UNF",
+            "number": "240"
+        },
+        {
+            "set": "MH3",
+            "number": "304"
+        }
+    ],
+    "Plea for Guidance": [
+        {
+            "set": "BNG",
+            "number": "24"
+        }
+    ],
+    "Ponder": [
+        {
+            "set": "LRW",
+            "number": "79"
+        }
+    ],
+    "Promise of Tomorrow": [
+        {
+            "set": "CMR",
+            "number": "39"
+        }
+    ],
+    "Raucous Carnival": [
+        {
+            "set": "DSK",
+            "number": "266"
+        }
+    ],
+    "Raugrin Triome": [
+        {
+            "set": "IKO",
+            "number": "311"
+        }
+    ],
+    "Razorkin Needlehead": [
+        {
+            "set": "DSK",
+            "number": "347"
+        }
+    ],
+    "Razortrap Gorge": [
+        {
+            "set": "DSK",
+            "number": "267"
+        }
+    ],
+    "Reforge the Soul": [
+        {
+            "set": "AVR",
+            "number": "151"
+        }
+    ],
+    "Rest in Peace": [
+        {
+            "set": "RTR",
+            "number": "18"
+        }
+    ],
+    "Restless Spire": [
+        {
+            "set": "WOE",
+            "number": "306"
+        }
+    ],
+    "Rite of the Serpent": [
+        {
+            "set": "PLST",
+            "number": "KTK-86"
+        }
+    ],
+    "Rockfall Vale": [
+        {
+            "set": "MID",
+            "number": "284"
+        }
+    ],
+    "Run Away Together": [
+        {
+            "set": "BLB",
+            "number": "67"
+        }
+    ],
+    "Sacred Foundry": [
+        {
+            "set": "UNF",
+            "number": "285"
+        }
+    ],
+    "Salvation Swan": [
+        {
+            "set": "BLB",
+            "number": "28"
+        }
+    ],
+    "Scavenger's Talent": [
+        {
+            "set": "BLB",
+            "number": "111"
+        }
+    ],
+    "Scheming Symmetry": [
+        {
+            "set": "M20",
+            "number": "113"
+        }
+    ],
+    "Season of Weaving": [
+        {
+            "set": "BLB",
+            "number": "68"
+        }
+    ],
+    "Shattered Sanctum": [
+        {
+            "set": "VOW",
+            "number": "283"
+        }
+    ],
+    "Shipwreck Marsh": [
+        {
+            "set": "MID",
+            "number": "285"
+        }
+    ],
+    "Shivan Reef": [
+        {
+            "set": "DMU",
+            "number": "380"
+        }
+    ],
+    "Silverskin Armor": [
+        {
+            "set": "MBS",
+            "number": "132"
+        }
+    ],
+    "Slave of Bolas": [
+        {
+            "set": "DDH",
+            "number": "67"
+        }
+    ],
+    "Slayers' Stronghold": [
+        {
+            "set": "SLD",
+            "number": "356"
+        }
+    ],
+    "Snow-Covered Forest": [
+        {
+            "set": "SLD",
+            "number": "1477"
+        }
+    ],
+    "Snow-Covered Island": [
+        {
+            "set": "SLD",
+            "number": "1474"
+        }
+    ],
+    "Snow-Covered Mountain": [
+        {
+            "set": "SLD",
+            "number": "1476"
+        },
+        {
+            "set": "MH1",
+            "number": "253"
+        }
+    ],
+    "Snow-Covered Plains": [
+        {
+            "set": "SLD",
+            "number": "325"
+        },
+        {
+            "set": "SLD",
+            "number": "1473"
+        }
+    ],
+    "Snow-Covered Swamp": [
+        {
+            "set": "MH1",
+            "number": "252"
+        }
+    ],
+    "Solitude": [
+        {
+            "set": "MH2",
+            "number": "307"
+        }
+    ],
+    "Sonar Strike": [
+        {
+            "set": "BLB",
+            "number": "32"
+        }
+    ],
+    "Soulherder": [
+        {
+            "set": "MH1",
+            "number": "214"
+        }
+    ],
+    "Sower of Temptation": [
+        {
+            "set": "SLD",
+            "number": "120"
+        }
+    ],
+    "Spinerock Knoll": [
+        {
+            "set": "SLD",
+            "number": "439"
+        }
+    ],
+    "Springleaf Drum": [
+        {
+            "set": "BRR",
+            "number": "55"
+        }
+    ],
+    "Starfall Invocation": [
+        {
+            "set": "BLB",
+            "number": "298"
+        }
+    ],
+    "Stargaze": [
+        {
+            "set": "BLB",
+            "number": "114"
+        }
+    ],
+    "Steam Vents": [
+        {
+            "set": "UNF",
+            "number": "283"
+        }
+    ],
+    "Sterling Grove": [
+        {
+            "set": "MH2",
+            "number": "293"
+        }
+    ],
+    "Stormcarved Coast": [
+        {
+            "set": "VOW",
+            "number": "284"
+        }
+    ],
+    "Stream of Unconsciousness": [
+        {
+            "set": "MOR",
+            "number": "52"
+        }
+    ],
+    "Sulfurous Springs": [
+        {
+            "set": "DMU",
+            "number": "381"
+        }
+    ],
+    "Svyelun of Sea and Sky": [
+        {
+            "set": "MH2",
+            "number": "69"
+        }
+    ],
+    "Svyelun of Sea and Sky // Svyelun of Sea and Sky": [
+        {
+            "set": "AMH2",
+            "number": "25"
+        }
+    ],
+    "Swamp": [
+        {
+            "set": "SLD",
+            "number": "65",
+            "annotations": "*F*"
+        },
+        {
+            "set": "ACR",
+            "number": "106"
+        },
+        {
+            "set": "UNF",
+            "number": "242"
+        },
+        {
+            "set": "THB",
+            "number": "252"
+        },
+        {
+            "set": "BLB",
+            "number": "270"
+        },
+        {
+            "set": "DSK",
+            "number": "274"
+        },
+        {
+            "set": "MKM",
+            "number": "274"
+        },
+        {
+            "set": "SNC",
+            "number": "276"
+        },
+        {
+            "set": "FDN",
+            "number": "286"
+        },
+        {
+            "set": "MOM",
+            "number": "286"
+        },
+        {
+            "set": "FDN",
+            "number": "287"
+        },
+        {
+            "set": "MH3",
+            "number": "306"
+        },
+        {
+            "set": "PIP",
+            "number": "321"
+        },
+        {
+            "set": "2XM",
+            "number": "377"
+        },
+        {
+            "set": "SLD",
+            "number": "450"
+        },
+        {
+            "set": "SLD",
+            "number": "1401"
+        },
+        {
+            "set": "SLD",
+            "number": "539"
+        }
+    ],
+    "Tamiyo, Field Researcher": [
+        {
+            "set": "BLC",
+            "number": "100"
+        }
+    ],
+    "Tamiyo, Inquisitive Student // Tamiyo, Seasoned Scholar": [
+        {
+            "set": "MH3",
+            "number": "242"
+        }
+    ],
+    "Tamiyo's Compleation": [
+        {
+            "set": "NEO",
+            "number": "83"
+        }
+    ],
+    "Tamiyo's Safekeeping": [
+        {
+            "set": "NEO",
+            "number": "211"
+        }
+    ],
+    "Temporal Mastery": [
+        {
+            "set": "MM3",
+            "number": "54"
+        }
+    ],
+    "Thassa, God of the Sea": [
+        {
+            "set": "THS",
+            "number": "66"
+        }
+    ],
+    "The Jolly Balloon Man": [
+        {
+            "set": "DSK",
+            "number": "359"
+        }
+    ],
+    "The Tale of Tamiyo": [
+        {
+            "set": "DSK",
+            "number": "75"
+        }
+    ],
+    "The Wandering Rescuer": [
+        {
+            "set": "DSK",
+            "number": "41"
+        }
+    ],
+    "Thespian's Stage": [
+        {
+            "set": "SLD",
+            "number": "1607"
+        }
+    ],
+    "Thirst for Discovery": [
+        {
+            "set": "VOW",
+            "number": "333"
+        }
+    ],
+    "Thirsting Shade": [
+        {
+            "set": "RNA",
+            "number": "87"
+        }
+    ],
+    "Thornspire Verge": [
+        {
+            "set": "DSK",
+            "number": "333"
+        }
+    ],
+    "Thornvault Forager": [
+        {
+            "set": "BLB",
+            "number": "364"
+        }
+    ],
+    "Toby, Beastie Befriender": [
+        {
+            "set": "DSK",
+            "number": "356"
+        }
+    ],
+    "Twilight Prophet": [
+        {
+            "set": "LCC",
+            "number": "211"
+        }
+    ],
+    "Tyvar, the Pummeler": [
+        {
+            "set": "DSK",
+            "number": "353"
+        }
+    ],
+    "Under the Skin": [
+        {
+            "set": "DSK",
+            "number": "203"
+        }
+    ],
+    "Unnerving Grasp": [
+        {
+            "set": "DSK",
+            "number": "80"
+        }
+    ],
+    "Unsettling Twins": [
+        {
+            "set": "DSK",
+            "number": "38"
+        }
+    ],
+    "Valgavoth's Lair": [
+        {
+            "set": "DSK",
+            "number": "327"
+        }
+    ],
+    "Valley Questcaller": [
+        {
+            "set": "BLB",
+            "number": "36"
+        }
+    ],
+    "Valley Rotcaller": [
+        {
+            "set": "BLB",
+            "number": "313"
+        }
+    ],
+    "Vanishment": [
+        {
+            "set": "AVR",
+            "number": "82"
+        }
+    ],
+    "Vault of Whispers": [
+        {
+            "set": "SLD",
+            "number": "302"
+        }
+    ],
+    "Vengeful Rebirth": [
+        {
+            "set": "UMA",
+            "number": "209"
+        }
+    ],
+    "Vinereap Mentor": [
+        {
+            "set": "BLB",
+            "number": "238"
+        }
+    ],
+    "Voldaren Estate": [
+        {
+            "set": "VOW",
+            "number": "403",
+            "annotations": "*F*"
+        }
+    ],
+    "Wastes": [
+        {
+            "set": "SLD",
+            "number": "705"
+        }
+    ],
+    "Watery Grave": [
+        {
+            "set": "UNF",
+            "number": "278"
+        }
+    ],
+    "Xander's Lounge": [
+        {
+            "set": "SNC",
+            "number": "358"
+        }
+    ],
+    "Yavimaya Coast": [
+        {
+            "set": "DMU",
+            "number": "382"
+        }
+    ],
+    "Zagoth Triome": [
+        {
+            "set": "IKO",
+            "number": "313"
+        }
+    ],
+    "Zimone, All-Questioning": [
+        {
+            "set": "DSK",
+            "number": "241"
+        }
+    ],
+    "Zombie": [
+        {
+            "set": "TEMN",
+            "number": "4"
+        }
+    ]
+}
