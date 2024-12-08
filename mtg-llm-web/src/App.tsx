@@ -104,23 +104,33 @@ const GameView = ({ viewOnly }: { viewOnly: boolean }) => {
       <CodeHistory codeHistory={gameMaster.used_python_code} errorHistory={gameMaster.error_messages} />
 
       <GamePanel>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }}>
-            <div>
-              <p>Library: {gameMaster.game_state.player_boards[0].library.length}</p>
-              <p>Graveyard: {gameMaster.game_state.player_boards[0].graveyard.length}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '10px', marginLeft: '10px', marginRight: '10px' }}>
+          <div>
+            <p>Library: {gameMaster.game_state.player_boards[0].library.length}</p>
+            <p>Graveyard: {gameMaster.game_state.player_boards[0].graveyard.length}</p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <p>Exile: {gameMaster.game_state.player_boards[0].exile.length}</p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <h2>Game State</h2>
-              <p>Turn Step: {gameMaster.game_state.turn_step}</p>
-              <p>Turn: {gameMaster.game_state.turn_number}</p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p>Library: {gameMaster.game_state.player_boards[1].library.length}</p>
-              <p>Graveyard: {gameMaster.game_state.player_boards[1].graveyard.length}</p>
+              {Object.entries(gameMaster.game_state.player_boards[0].counters).map(([name, value]) => (
+                <p key={name}>{name}: {value}</p>
+              ))}
+            </div>  
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <h2>Game State</h2>
+            <p>Turn Step: {gameMaster.game_state.turn_step}</p>
+            <p>Turn: {gameMaster.game_state.turn_number}</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p>Library: {gameMaster.game_state.player_boards[1].library.length}</p>
+            <p>Graveyard: {gameMaster.game_state.player_boards[1].graveyard.length}</p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {Object.entries(gameMaster.game_state.player_boards[1].counters).map(([name, value]) => (
+                <p key={name}>{name}: {value}</p>
+              ))}
               <p>Exile: {gameMaster.game_state.player_boards[1].exile.length}</p>
             </div>
           </div>
+        </div>
 
         {gameMaster.game_state.player_boards.map((board, i) => (
           <PlayerBoard key={i} board={board} playerIndex={i} gameId={gameId}/>
