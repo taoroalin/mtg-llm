@@ -44,7 +44,7 @@ def format_card_full(card_name:game_state.Card, simplify_basic_lands:bool=False,
         
     return '\n'.join(parts)
     
-def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_lands:bool=False):
+def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_lands:bool=False, judge_notes:bool=False):
     physical_card_formatted = format_card_full(card.card, simplify_basic_lands)
     
     battlefield_parts = []
@@ -59,6 +59,8 @@ def format_battlefield_card(card:game_state.BattlefieldCard, simplify_basic_land
         battlefield_parts.append("Card is tapped")
     if 'Creature' in game_state.get_card_info(card.card).get('types', []) and card.entered_battlefield_this_turn:
         battlefield_parts.append("Entered battlefield this turn")
+    if judge_notes and card.judge_notes:
+        battlefield_parts.append(f"Notes: {card.judge_notes}")
     return f"Battlefield ID: {card.battlefield_id}\n" + physical_card_formatted + '\n' + '\n'.join(battlefield_parts)
 
 

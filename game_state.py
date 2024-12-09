@@ -46,7 +46,7 @@ def get_card_info(name:str) -> CardInfo:
 
 card_database: dict[str, CardInfo] = json.load(Path("assets/AtomicCardsGameplay.json").open())
 
-def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:Optional[int]=None, toughness:Optional[int]=None, text:str='') -> CardInfo:
+def register_token_card_info(name:str, types:List[str], subtypes:list[str], power:Optional[int]=None, toughness:Optional[int]=None, text:str='') -> Card:
     """Token names don't contain 'Token', eg name is 'Goblin' not 'Goblin Token'"""
     assert name not in card_database['data'], f"Card {name} already exists"
     new_card_info: CardInfo = {
@@ -61,7 +61,7 @@ def create_token_card_info(name:str, types:List[str], subtypes:list[str], power:
         "isToken": True
     }
     card_database['data'][name] = new_card_info
-    return new_card_info
+    return name
 
 
 class TurnStep(str, Enum):
@@ -95,6 +95,9 @@ class BattlefieldCard(BaseModel):
     attached_to: Optional[int]
     marked_damage: int
     entered_battlefield_this_turn: bool = Field(default=True)
+    judge_private_notes: str = Field(default="", description="Notes from the game judge to remember relating to this card that are not shown to players, such as what face down card something is attached to. The judge must keep this up to date manually.")
+    judge_public_notes: str = Field(default="", description="Public notes from the game judge relating to this card, such as cards it is linked to in some way, eg the Soulbond mechanic or Dauntless Bodyguard. The judge must keep this up to date manually.")
+    
     
     @classmethod
     def from_card(cls, card: CardOrToken, owner: int, battlefield_id: int) -> "BattlefieldCard":
@@ -110,7 +113,16 @@ class BattlefieldCard(BaseModel):
             marked_damage=0,
             entered_battlefield_this_turn=True
         )
+
+def sort_key(card: Card):
+    info = get_card_info(card)
+    mana_value = info.get("manaValue", 0)
+    types = info.get("types", [])
     
+    # Priority within each mana value (higher = first)
+    type_priority = 4 if 'Basic' in info.get('supertypes', []) else( 3 if "Land" in types else (1 if "Creature" in types else 2))
+    
+    return (mana_value, -type_priority)
 
 class PlayerBoard(BaseModel):
     "The entire state of a player, including their hand, battlefield, counters and tokens, graveyard, etc."
@@ -118,7 +130,7 @@ class PlayerBoard(BaseModel):
     hand: list[Card] = Field(default_factory=list, description="Cards in hand. Note that cards are displayed in mana value order but stored unsorted.")
     
     def get_hand_sorted(self) -> list[Card]:
-        return sorted(self.hand, key=lambda card: get_card_info(card)["manaValue"])
+        return sorted(self.hand, key=sort_key)
         
     graveyard: list[Card] = Field(default_factory=list)
     exile: list[Card] = Field(default_factory=list)
@@ -181,25 +193,30 @@ class PlayerBoard(BaseModel):
         
     @property
     def battlefield_sorted(self) -> list[BattlefieldCard]:
-        return sorted(self.battlefield.values(), key=lambda card: (get_card_info(card.card).get('isToken', False), get_card_info(card.card).get("manaValue", 0)))
+        return sorted(self.battlefield.values(), key=lambda card: sort_key(card.card))
         
 class GameState(BaseModel):
+    model_config = {"arbitrary_types_allowed":True}
+    
     player_decklists: list[DeckList]
     player_boards: list[PlayerBoard]
-    battlefield_ids: list[int] = Field(default_factory=list)
     stack: list[CardOrToken] = Field(default_factory=list)
     next_battlefield_id: int = Field(default=0)
     active_player_index: int = Field(default=0)
     turn_step: TurnStep = Field(default=TurnStep.UNTAP)
     turn_number: int = Field(default=1, description="The number of the current turn, starting from 1. Each player taking a turn is 1 turn.")
     starting_player_index: int = Field(default=0)
+    random_state: int = Field(default_factory=lambda: random.randint(0, 2**32-1), description="Random state used to make the game state deterministic for a given player.")
+    
     
     def cleanup_damage(self):
         for player_board in self.player_boards:
             player_board.cleanup_damage()
     
     def shuffle_library(self, player_index: int):
-        random.shuffle(self.player_boards[player_index].library)
+        rstate = random.Random(self.random_state)
+        rstate.shuffle(self.player_boards[player_index].library)
+        self.random_state = rstate.randint(0, 2**32-1)
             
     def add_card_to_battlefield(self,player_index: int, card: CardOrToken):
         battlefield_card = BattlefieldCard.from_card(card, player_index, self.next_battlefield_id)

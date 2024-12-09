@@ -151,7 +151,7 @@ async def create_game(request: Request):
 async def get_playmat(game_id: str, player_index: str):
     game = get_game_data(game_id)
     if game is None:
-        game = games.get(game_id)
+        game = games.get(game_id).game_master
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
     decklist = game.game_state.player_decklists[int(player_index)]

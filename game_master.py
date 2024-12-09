@@ -22,15 +22,30 @@ class AgentInterface(BaseModel):
     async def take_action(self, history:list["HistoryStep"], visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
         pass
         return ""
-
+        
+def game_state_consistency(game_states: list[game_state.GameState]) -> tuple[Any, int]:
+    jsons = [state.model_dump_json() for state in game_states]
+    state_counts = {}
+    for state_json in jsons:
+        state_counts[state_json] = state_counts.get(json, 0) + 1
+    max_value = max(state_counts.items(), key=lambda x: x[1])[0]
+    return game_states[jsons.index(max_value)], jsons.index(max_value)
+    
+def consistency(objects: list)->tuple[Any, int]:
+    counts = {}
+    for obj in objects:
+        counts[obj] = counts.get(obj, 0) + 1
+    max_value =  max(counts.items(), key=lambda x: x[1])[0]
+    return max_value, objects.index(max_value)
+    
 python_tool_description = """Python code to execute to update game state. This code will execute in a context with variable `game_state` defined and game_state.py imported. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. This code will only be executed once on the exact game state you can see, so you only need to check conditions in complex situations or when you need to read information that's hidden by default like players' libraries. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."""
+
 
 class GameMaster(BaseModel):
     game_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     game_state: game_state.GameState
     agents: list["AgentInterface"] = Field(default_factory=list)
     generation_settings: dict
-    step_callback: Optional[Callable[[], None]] = Field(default=None)
     past_game_states: list[game_state.GameState] = Field(default_factory=list)
     player_observation_histories: list[list[HistoryStep]] = Field(default_factory=list)
     
@@ -93,7 +108,7 @@ class GameMaster(BaseModel):
         self.player_observation_histories[player_index].append(HistoryStep(visible_information=player_view, action=player_action, available_actions=available_actions))
         return player_action
         
-    async def execute_action(self, action: str):
+    async def execute_action(self, action: str, consistency_n = 8):
         execute_action_messages = self.get_base_messages()
         execute_action_messages.append({"role":"user", "content":f"Player validate whether the action player {self.priority_player} wants to take is valid. If it is, advance the game state according to the action.\nAction: {action}"})
         execute_action_tools = {"functions":[
@@ -124,24 +139,29 @@ class GameMaster(BaseModel):
             }
         }],
         "function_call":{"name": "advance_game_state"}}
-        execution_success = False
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=execute_action_messages,
                 **self.generation_settings,
-                **execute_action_tools
+                **execute_action_tools,
+                n=consistency_n
             )
-            execute_action_messages.append(response.choices[0].message.model_dump(exclude_none=True))
-            arguments = json.loads(response.choices[0].message.function_call.arguments)
-            if not arguments["is_action_valid"]:
-                return False, arguments["invalid_action_feedback"]
-            execution_success, execution_output = await self.execute_code_with_game_state(arguments["python_code"])
-            if execution_success:
-                return True, ""
-            else:
-                execute_action_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {execution_output}"})
+            choice_jsons = [json.loads(choice.message.function_call.arguments) for choice in response.choices]
+            majority_valid = consistency([choice["is_action_valid"] for choice in choice_jsons])[0]
+            if not majority_valid:
+                return False, next(c["invalid_action_feedback"] for c in choice_jsons if c["invalid_action_feedback"])
+            evaluation_results = [await self.execute_code_with_game_state(choice["python_code"], apply_changes=False) for choice in choice_jsons]
+            if not any([result[0] for result in evaluation_results]):
+                execute_action_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {evaluation_results[0][1]}"})
+                continue
+            
+            valid_states = [x[2] for x in evaluation_results if x[0]]
+            chosen_state, chosen_index = game_state_consistency(valid_states)
+            self.game_state = chosen_state
+            self.used_python_code.append(choice_jsons[chosen_index]["python_code"])
+            return True, ""
                 
-    async def advance_game_to_next_priority(self):
+    async def advance_game_to_next_priority(self, consistency_n = 8):
         advance_game_state_messages = self.get_base_messages()
     
         advance_state_tools = {"functions":[
@@ -170,26 +190,26 @@ class GameMaster(BaseModel):
             "function_call":{"name": "advance_game_state"}}
         
         advance_game_state_messages.append({"role":"user", "content":"Please identify the next time an player will get priority and be able to take an action, and advance the game to that point. Advancing the game state involves setting the active_player and turn_step properties of game_state, as well as untapping permanents, drawing cards, clearing damage, resolving any triggered abilities that do not involve player choices, etc. Please skip over multiple steps if no players will have available actions, eg executing untap, upkeep, and draw steps and skipping to main phase if no player has instant speed actions available."})
-        execution_success = False
         for _ in range(self.n_retries):
             response = await log.llm_generate(
-            messages=advance_game_state_messages,
-            **self.generation_settings,
-            **advance_state_tools
-        )
+                messages=advance_game_state_messages,
+                **self.generation_settings,
+                **advance_state_tools,
+                n=consistency_n
+            )
             
-            result = json.loads(response.choices[0].message.function_call.arguments)
-            required_fields = ["reasoning", "priority_player", "python_code"]
-            if not all(field in result for field in required_fields):
-                advance_game_state_messages.append({"role":"user", "content":f"The response is missing required fields. Please include all of: {required_fields}"})
+            choice_jsons = [json.loads(choice.message.function_call.arguments) for choice in response.choices]
+                
+            evaluation_results = [await self.execute_code_with_game_state(choice["python_code"], apply_changes=False) for choice in choice_jsons]
+            if not any([result[0] for result in evaluation_results]):
+                advance_game_state_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {evaluation_results[0][1]}"})
                 continue
-            self.priority_player = result["priority_player"]
-            execution_success, execution_output = await self.execute_code_with_game_state(result["python_code"])
-            if execution_success:
-                break
-            else:
-                advance_game_state_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {execution_output}"})
-        return result
+            
+            valid_states = [x[2] for x in evaluation_results if x[0]]
+            chosen_state, chosen_index = game_state_consistency(valid_states)
+            self.game_state = chosen_state
+            self.used_python_code.append(choice_jsons[chosen_index]["python_code"])
+            self.priority_player = choice_jsons[chosen_index]["priority_player"]
         
     async def analyze_state_at_priority(self):
         analyze_state_messages = self.get_base_messages()
@@ -293,19 +313,21 @@ Here is all the python code that you have used to execute actions and advance ga
         ]
         return messages
         
-    async def execute_code_with_game_state(self, code: str) -> tuple[bool, str]:
+    async def execute_code_with_game_state(self, code: str, apply_changes: bool = True) -> tuple[bool, str, game_state.GameState]:
 
         f = io.StringIO()
-        previous_game_state = deepcopy(self.game_state)
+        new_game_state = deepcopy(self.game_state)
         global_vars = {name: getattr(game_state, name) for name in dir(game_state) if not name.startswith('_')}
-        self.code_local_vars['game_state'] = self.game_state
+        self.code_local_vars['game_state'] = new_game_state
+        
         try:
             with redirect_stdout(f):
                 exec(code, global_vars, self.code_local_vars)
-            self.used_python_code.append(code)
-            return True, f.getvalue()
+            if apply_changes:
+                self.used_python_code.append(code)
+                self.game_state = new_game_state
+            return True, f.getvalue(), new_game_state
         except Exception:
             error_trace = traceback.format_exc()
             self.error_messages.append(f"Code execution failed\nCode:\n{code}\n\nError:\n{error_trace}")
-            self.game_state = previous_game_state
-            return False, error_trace
+            return False, error_trace, new_game_state
