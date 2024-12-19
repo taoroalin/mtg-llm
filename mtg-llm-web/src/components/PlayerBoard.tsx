@@ -46,6 +46,18 @@ interface PlayerBoardProps {
   playerIndex: number;
   gameId: string;
 }
+// const sortKey = (card: string) => {
+//   const info = getCardInfo(card);
+//   const manaValue = info?.manaValue ?? 0;
+//   const types = info?.types ?? [];
+  
+//   const typePriority = info?.supertypes?.includes('Basic') ? 4 : 
+//     types.includes('Land') ? 3 :
+//     types.includes('Creature') ? 1 : 2;
+
+//   return [manaValue, -typePriority];
+// };
+
 
 export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) => {
   const [sortedBattlefield, setSortedBattlefield] = useState<{card: BattlefieldCard, manaValue: number}[]>(Object.values(board.battlefield).map(card => ({card: card, manaValue: 0})));
@@ -97,10 +109,9 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     backgroundBlendMode: 'overlay'
   }}>
-    <h2 style={{marginTop: '4px', marginBottom: '4px', 'marginLeft':'0px'}}>Player {playerIndex} (Life: {board.life})</h2>
+    <h2 style={{marginTop: '0px', marginBottom: '0px', display: 'inline-block', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: '8px', padding: '4px'}}>Player {playerIndex} Life: {board.life}</h2>
     
     <Zone>
-      <div><strong>Battlefield</strong></div>
       <Battlefield>
         {sortedBattlefield.map(({card}) => (
           <CardWrapper key={card.battlefield_id} tapped={card.tapped}>
@@ -114,7 +125,7 @@ export const PlayerBoard = ({ board, playerIndex, gameId }: PlayerBoardProps) =>
     </Zone>
 
     <Zone>
-      <div><strong>Hand ({board.hand.length} cards)</strong></div>
+      {/* <div><strong>Hand ({board.hand.length} cards)</strong></div> */}
       <Hand>
         {sortedHand.map((card, i) => (
           <CardWrapper key={i} tapped={false}>

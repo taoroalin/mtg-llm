@@ -34,7 +34,7 @@ export function GameHistory({ playerHistories }: GameHistoryProps) {
       {playerHistories.map((playerHistory, playerIndex) => (
         playerHistory.map((step, stepIndex) => (
           <ChatMessage key={`${playerIndex}-${stepIndex}`}>
-            <strong>Player {playerIndex + 1}:</strong>{' '}
+            <strong>Player {playerIndex}:</strong>{' '}
             <ReactMarkdown>{step.action}</ReactMarkdown>
           </ChatMessage>
         ))

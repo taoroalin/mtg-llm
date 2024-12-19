@@ -18,7 +18,14 @@ class HistoryStep(BaseModel):
     action: str
     
 class AgentInterface(BaseModel):
-
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "ignore_bound_methods": True,
+        "json_schema_extra": {
+            "exclude": {"take_action"}
+        }
+    }
+    
     async def take_action(self, history:list["HistoryStep"], visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
         pass
         return ""
@@ -42,6 +49,11 @@ python_tool_description = """Python code to execute to update game state. This c
 
 
 class GameMaster(BaseModel):
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "ignore_bound_methods": True,
+    }
+
     game_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     game_state: game_state.GameState
     agents: list["AgentInterface"] = Field(default_factory=list)
@@ -80,7 +92,10 @@ class GameMaster(BaseModel):
     async def step(self):
         self.past_game_states.append(deepcopy(self.game_state))
         await self.game_master_step(self.player_action)
-        log.save_game(self.game_id, self)
+        try:
+            log.save_game(self.game_id, self)
+        except Exception:
+            print("Failed to save game")
         if self.winner is not None:
             log.finish_game(self.game_id)
             return self.winner
@@ -150,15 +165,17 @@ class GameMaster(BaseModel):
             majority_valid = consistency([choice["is_action_valid"] for choice in choice_jsons])[0]
             if not majority_valid:
                 return False, next(c["invalid_action_feedback"] for c in choice_jsons if c["invalid_action_feedback"])
-            evaluation_results = [await self.execute_code_with_game_state(choice["python_code"], apply_changes=False) for choice in choice_jsons]
+            valid_codes = [choice["python_code"] for choice in choice_jsons if choice["is_action_valid"]]
+            evaluation_results = [await self.execute_code_with_game_state(code, apply_changes=False) for code in valid_codes]
             if not any([result[0] for result in evaluation_results]):
                 execute_action_messages.append({"role":"user", "content":f"The code to execute to advance the game state raised an exception. State was restored to before the action was executed. Please fix the code and try again.\nException: {evaluation_results[0][1]}"})
                 continue
             
             valid_states = [x[2] for x in evaluation_results if x[0]]
+            valid_state_codes = [valid_codes[i] for i, x in enumerate(evaluation_results) if x[0]]
             chosen_state, chosen_index = game_state_consistency(valid_states)
             self.game_state = chosen_state
-            self.used_python_code.append(choice_jsons[chosen_index]["python_code"])
+            self.used_python_code.append(valid_state_codes[chosen_index])
             return True, ""
                 
     async def advance_game_to_next_priority(self, consistency_n = 8):
@@ -206,10 +223,12 @@ class GameMaster(BaseModel):
                 continue
             
             valid_states = [x[2] for x in evaluation_results if x[0]]
+            valid_state_codes = [choice_jsons[i]["python_code"] for i, x in enumerate(evaluation_results) if x[0]]
             chosen_state, chosen_index = game_state_consistency(valid_states)
             self.game_state = chosen_state
-            self.used_python_code.append(choice_jsons[chosen_index]["python_code"])
+            self.used_python_code.append(valid_state_codes[chosen_index])
             self.priority_player = choice_jsons[chosen_index]["priority_player"]
+            return
         
     async def analyze_state_at_priority(self):
         analyze_state_messages = self.get_base_messages()

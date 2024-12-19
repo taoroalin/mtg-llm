@@ -108,12 +108,12 @@ const GameView = ({ viewOnly }: { viewOnly: boolean }) => {
           <div>
             <p>Library: {gameMaster.game_state.player_boards[0].library.length}</p>
             <p>Graveyard: {gameMaster.game_state.player_boards[0].graveyard.length}</p>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <p>Exile: {gameMaster.game_state.player_boards[0].exile.length}</p>
               {Object.entries(gameMaster.game_state.player_boards[0].counters).map(([name, value]) => (
                 <p key={name}>{name}: {value}</p>
               ))}
-            </div>  
+            </span>  
           </div>
           <div style={{ textAlign: 'center' }}>
             <h2>Game State</h2>
@@ -123,12 +123,12 @@ const GameView = ({ viewOnly }: { viewOnly: boolean }) => {
           <div style={{ textAlign: 'right' }}>
             <p>Library: {gameMaster.game_state.player_boards[1].library.length}</p>
             <p>Graveyard: {gameMaster.game_state.player_boards[1].graveyard.length}</p>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <span style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {Object.entries(gameMaster.game_state.player_boards[1].counters).map(([name, value]) => (
                 <p key={name}>{name}: {value}</p>
               ))}
               <p>Exile: {gameMaster.game_state.player_boards[1].exile.length}</p>
-            </div>
+            </span>
           </div>
         </div>
 

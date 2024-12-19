@@ -166,6 +166,9 @@ class PlayerBoard(BaseModel):
         for _ in range(number_of_cards):
             self.hand.append(self.library.pop())
                     
+    def remove_card_from_hand(self, card: Card):
+        self.hand.remove(card)
+                    
     @classmethod
     def init_from_decklist(cls, decklist: DeckList, arena_hand_smoothing:bool=False):
         initial_library = [card for card,count in decklist.mainboard.items() for _ in range(count)]
@@ -200,7 +203,7 @@ class GameState(BaseModel):
     
     player_decklists: list[DeckList]
     player_boards: list[PlayerBoard]
-    stack: list[CardOrToken] = Field(default_factory=list)
+    stack: list[str] = Field(default_factory=list, description="List of text descriptions of spells and abilities on the stack. Only put spells and abilities here if players need to take actions while they are on the stack.")
     next_battlefield_id: int = Field(default=0)
     active_player_index: int = Field(default=0)
     turn_step: TurnStep = Field(default=TurnStep.UNTAP)
