@@ -3,11 +3,12 @@ from agents import NaiveAgent
 from game_master import GameMaster
 import asyncio
 from dotenv import load_dotenv
+import uuid
 load_dotenv()
 
 if __name__ == "__main__":
     generation_settings = {
-        "model": "gpt-4o-2024-08-06",
+        "model": "claude-3-5-sonnet",
         "temperature": 1
     }
     with open("assets/example_decks/Cats_Elves.json") as f:

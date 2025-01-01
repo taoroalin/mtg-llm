@@ -22,7 +22,7 @@ class GameStateWebSocket:
         print("="*50 + "\n")
         self.active_connections: Set[WebSocket] = set()
         generation_settings = {
-            "model": "gpt-4o-2024-08-06",
+            "model": "claude-3-5-sonnet-20241022",
             "temperature": 1,
             "max_completion_tokens": 4000
         }

@@ -11,26 +11,27 @@ import uuid
 load_dotenv()
 
 if __name__ == "__main__":
-    n_runs = 20
-    generation_settings = {
-        "model": "gpt-4o-2024-08-06",
+    n_runs = 1
+    generation_settings_1 = {
+        "model": "claude-3-5-sonnet-20241022",
+        # "model": "gpt-4o-2024-08-06",
         "temperature": 1
     }
-    generation_settings_4o_mini = {
-        "model": "gpt-4o-mini",
+    generation_settings_2 = {
+        "model": "claude-3-5-sonnet-20241022",
         "temperature": 1
     }
     with open("assets/example_decks/Boros Energy.json") as f:
         boros_energy_deck = DeckList.model_validate_json(f.read())
     game_state = GameState.init_mirror(boros_energy_deck)
-    agents = [NaiveAgent(generation_settings=generation_settings), NaiveAgent(generation_settings=generation_settings_4o_mini)]
-    game_masters = [GameMaster(game_id=str(uuid.uuid4()), game_state=game_state, agents=agents, generation_settings=generation_settings) for _ in range(n_runs)]
+    agents = [NaiveAgent(generation_settings=generation_settings_1), NaiveAgent(generation_settings=generation_settings_2)]
+    game_masters = [GameMaster(game_id=str(uuid.uuid4()), game_state=game_state, agents=agents, generation_settings=generation_settings_1) for _ in range(n_runs)]
     async def run_games():
         games = [game_master.game_loop() for game_master in game_masters]
         return await asyncio.gather(*games)
         
-    # winners = asyncio.run(run_games())
-    # print(f"Winners: {winners}")
+    winners = asyncio.run(run_games())
+    print(f"Winners: {winners}")
     
     finished_games = Path("database/finished_games").glob("*.json")
     wins_by_model = defaultdict(int)

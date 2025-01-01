@@ -111,7 +111,7 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
     review_round = 0
     while True:
         response = await log.llm_generate(
-            model="gpt-4o-2024-05-13",
+            model="claude-3-5-sonnet-20241022",
             messages=conversation,
             temperature=1,
             max_tokens=4000,

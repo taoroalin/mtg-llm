@@ -126,8 +126,9 @@ class GameMaster(BaseModel):
     async def execute_action(self, action: str, consistency_n = 8):
         execute_action_messages = self.get_base_messages()
         execute_action_messages.append({"role":"user", "content":f"Player validate whether the action player {self.priority_player} wants to take is valid. If it is, advance the game state according to the action.\nAction: {action}"})
-        execute_action_tools = {"functions":[
-            {
+        execute_action_tools = {"tools":[
+            {"type": "function",
+            "function": {
             "name": "advance_game_state",
             "description": "Advance the game state according to the rules of Magic: The Gathering. First validate that the last player action was legal. If it was, execute the action and update the game state. If it was not, return an explanation of why it was illegal.",
             "parameters": {
@@ -152,8 +153,9 @@ class GameMaster(BaseModel):
                 },
                 "required": ["reasoning", "is_action_valid", "python_code", "winner"]
             }
+            }
         }],
-        "function_call":{"name": "advance_game_state"}}
+        "tool_choice":{"type":"function", "function":{"name": "advance_game_state"}}}
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=execute_action_messages,
@@ -161,7 +163,7 @@ class GameMaster(BaseModel):
                 **execute_action_tools,
                 n=consistency_n
             )
-            choice_jsons = [json.loads(choice.message.function_call.arguments) for choice in response.choices]
+            choice_jsons = [json.loads(choice.message.tool_calls[0].function.arguments) for choice in response.choices]
             majority_valid = consistency([choice["is_action_valid"] for choice in choice_jsons])[0]
             if not majority_valid:
                 return False, next(c["invalid_action_feedback"] for c in choice_jsons if c["invalid_action_feedback"])
@@ -181,8 +183,9 @@ class GameMaster(BaseModel):
     async def advance_game_to_next_priority(self, consistency_n = 8):
         advance_game_state_messages = self.get_base_messages()
     
-        advance_state_tools = {"functions":[
-                {
+        advance_state_tools = {"tools":[
+            {"type": "function",
+            "function": {
                 "name": "advance_game_state",
                 "description": "Advance the game state according to the rules of Magic: The Gathering to the next time a player will get priority and be able to take an action.",
                 "parameters": {
@@ -201,10 +204,11 @@ class GameMaster(BaseModel):
                             "description": "Python code to execute to update game state. This code will execute in a context with `game_state` defined. This code should modify game_state in place. Before and after code is executed, game state is backed up. If code raises an exception, game state will be restored to its previous state. You will see the printed output of this code, which you can use to eg look at cards in players' libraries."
                         },
                     },
-                    "required": ["reasoning", "priority_player", "python_code"]
+                        "required": ["reasoning", "priority_player", "python_code"]
+                    }
                 }
             }],
-            "function_call":{"name": "advance_game_state"}}
+            "tool_choice":{"type":"function", "function":{"name": "advance_game_state"}}}
         
         advance_game_state_messages.append({"role":"user", "content":"Please identify the next time an player will get priority and be able to take an action, and advance the game to that point. Advancing the game state involves setting the active_player and turn_step properties of game_state, as well as untapping permanents, drawing cards, clearing damage, resolving any triggered abilities that do not involve player choices, etc. Please skip over multiple steps if no players will have available actions, eg executing untap, upkeep, and draw steps and skipping to main phase if no player has instant speed actions available."})
         for _ in range(self.n_retries):
@@ -215,7 +219,7 @@ class GameMaster(BaseModel):
                 n=consistency_n
             )
             
-            choice_jsons = [json.loads(choice.message.function_call.arguments) for choice in response.choices]
+            choice_jsons = [json.loads(choice.message.tool_calls[0].function.arguments) for choice in response.choices]
                 
             evaluation_results = [await self.execute_code_with_game_state(choice["python_code"], apply_changes=False) for choice in choice_jsons]
             if not any([result[0] for result in evaluation_results]):
@@ -269,7 +273,7 @@ class GameMaster(BaseModel):
                     "required": ["reasoning", "priority_player", "priority_player_revealed_information", "priority_player_available_mana", "priority_player_available_actions", "winner"]
                 }
             }],
-            "function_call":{"name": "extract_state_info"}}
+            "tool_choice":{"type":"function", "function":{"name": "extract_state_info"}}}
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=analyze_state_messages,
@@ -277,7 +281,7 @@ class GameMaster(BaseModel):
                 **analyze_state_tools
             )
             
-            result = json.loads(response.choices[0].message.function_call.arguments)
+            result = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
             required_fields = ["reasoning", "priority_player", "priority_player_revealed_information", "priority_player_available_mana", "priority_player_available_actions", "winner"]
             if not all(field in result for field in required_fields):
                 analyze_state_messages.append({"role":"user", "content":f"The response is missing required fields. Please include all of: {required_fields}"})
@@ -311,7 +315,7 @@ class GameMaster(BaseModel):
         global_action_history = "\n".join([f"Player {action['player_index']}: {action['action']}" for action in self.global_action_history])
         used_python_code = "\n".join(self.used_python_code)
         messages = [
-            {"role":"system", "content":"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API."""},{"role":"user", "content":f"""Game Phase reminder:
+            {"role":"user", "content":"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API."""},{"role":"user", "content":f"""Game Phase reminder:
 {prompts.game_phase_guide}"""},
             {"role":"user", "content":f"""
 The current game state is stored in python objects. Here is a text summary of the current game state:
