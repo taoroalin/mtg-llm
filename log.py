@@ -24,7 +24,7 @@ prices = {
     "gpt-4o-mini": {"input": 0.15/1_000_000, "output": 0.6/1_000_000},
     "claude-3-opus-20240229": {"input": 15/1_000_000, "output": 75/1_000_000},
     "claude-3-sonnet-20240229": {"input": 3/1_000_000, "output": 15/1_000_000},
-    "claude-3-5-sonnet-20240229": {"input": 3/1_000_000, "output": 15/1_000_000}
+    "claude-3-5-sonnet-20241022": {"input": 3/1_000_000, "output": 15/1_000_000}
 }
 
 total_input_tokens = 0
@@ -67,7 +67,7 @@ async def llm_generate(**kwargs):
             "choices": [{
                 "message": {
                     "role": "assistant",
-                    "content": response.content[0].text
+                    "content": response.content[0].text if response.content[0].type == "text" else ""
                 },
                 "tool_calls": tool_calls
             }],
