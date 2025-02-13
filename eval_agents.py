@@ -13,8 +13,8 @@ load_dotenv()
 if __name__ == "__main__":
     n_runs = 1
     generation_settings_1 = {
-        "model": "claude-3-5-sonnet-20241022",
-        # "model": "gpt-4o-2024-08-06",
+        "model": "o3-mini",  # Using new default OpenAI model
+        # "model": "claude-3-5-sonnet-20241022",  # Alternative model option
         "temperature": 1
     }
     generation_settings_2 = {

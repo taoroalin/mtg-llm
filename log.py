@@ -17,6 +17,7 @@ openai_client = openai.AsyncOpenAI()
 anthropic_client = anthropic.AsyncAnthropic()
 
 prices = {
+    "o3-mini": {"input": 0.15/1_000_000, "output": 0.6/1_000_000},  # New default model
     "gpt-4o-2024-08-06": {"input": 2.5/1_000_000, "output": 10/1_000_000}, 
     "gpt-4o-2024-05-13": {"input": 5/1_000_000, "output": 10/1_000_000}, 
     "gpt-4o": {"input": 5/1_000_000, "output": 10/1_000_000}, 
