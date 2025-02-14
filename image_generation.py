@@ -13,7 +13,7 @@ async def generate_playmat_for_deck(decklist: DeckList) -> bytes:
     
     # Generate prompt using GPT-4
     prompt_response = await llm_generate(
-        model="gpt-4o-mini",
+        model="o3-mini",
         messages=[
             {
                 "role": "system",

@@ -153,7 +153,7 @@ def get_all_cards_prompt():
     return "\n".join([prompting.format_card_full(card) for card in game_state.card_database['data'].keys()])
     
 
-async def filter_cards_model(cards:list[str], query:str, model='gpt-4o-mini') -> list[str]:
+async def filter_cards_model(cards:list[str], query:str, model='o3-mini') -> list[str]:
     print("filtering cards with model", model, len(cards), "cards", query)
     cards_prompt = "\n\n".join(cards)
     conversation = [
