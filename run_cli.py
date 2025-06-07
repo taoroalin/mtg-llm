@@ -8,7 +8,7 @@ load_dotenv()
 
 if __name__ == "__main__":
     generation_settings = {
-        "model": "claude-3-5-sonnet",
+        "model": "claude-sonnet-4-20250514",
         "temperature": 1
     }
     with open("assets/example_decks/Cats_Elves.json") as f:

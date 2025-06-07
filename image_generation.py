@@ -26,7 +26,6 @@ async def generate_playmat_for_deck(decklist: DeckList) -> bytes:
         ],
         temperature=0.7
     )
-    print("playmat prompt is", prompt_response.choices[0].message.content)
     dalle_prompt = prompt_response.choices[0].message.content
 
     # Generate image using DALL-E 3
@@ -36,6 +35,5 @@ async def generate_playmat_for_deck(decklist: DeckList) -> bytes:
         size="1792x1024",
         quality="standard",
     )
-    print("got image response")
     
     return image_response.data[0].url

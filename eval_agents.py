@@ -13,12 +13,11 @@ load_dotenv()
 if __name__ == "__main__":
     n_runs = 1
     generation_settings_1 = {
-        "model": "claude-3-5-sonnet-20241022",
-        # "model": "gpt-4o-2024-08-06",
+        "model": "claude-sonnet-4-20250514",
         "temperature": 1
     }
     generation_settings_2 = {
-        "model": "claude-3-5-sonnet-20241022",
+        "model": "claude-sonnet-4-20250514",
         "temperature": 1
     }
     with open("assets/example_decks/Boros Energy.json") as f:

@@ -82,44 +82,49 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
         },
     ]
     
-    build_deck_tools = {"functions":[
-                {
-                "name": "build_deck",
-                "description": "Build a decklist according to the user's request.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "reasoning": {
-                            "type": "string",
-                            "description": "Reasoning about how to build a decklist."
-                        },
-                        "is_finished": {
-                            "type": "boolean",
-                            "description": "Whether the decklist is already complete before running code."
-                        },
-                        "python_code": {
-                            "type": "string",
-                            "description": "Python code to build a decklist. This code will execute in a context with `all_cards`, a dict from card name to card info, and `decklist` defined. This code should modify `decklist` in place. Print information for new cards you are considering adding to the decklist. A function `query_cards_with_llm` is also available, which takes in a natural language query and a list of cards and returns a list of card names that match the query. The function uses a fast language model and is more efficient than reading cards manually. You often want to filter for all hard criteria like legality and cost, then use `query_cards_with_llm` to find cards that match a more qualitative query."
-                        },
+    build_deck_tools = {
+        "tools": [{
+            "name": "build_deck",
+            "description": "Build a decklist according to the user's request.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "reasoning": {
+                        "type": "string",
+                        "description": "Reasoning about how to build a decklist."
                     },
-                    "required": ["reasoning", "is_finished", "python_code"]
-                }
-            }],
-            "function_call":{"name": "build_deck"}}
+                    "is_finished": {
+                        "type": "boolean",
+                        "description": "Whether the decklist is already complete before running code."
+                    },
+                    "python_code": {
+                        "type": "string",
+                        "description": "Python code to build a decklist. This code will execute in a context with `all_cards`, a dict from card name to card info, and `decklist` defined. This code should modify `decklist` in place. Print information for new cards you are considering adding to the decklist. A function `query_cards_with_llm` is also available, which takes in a natural language query and a list of cards and returns a list of card names that match the query. The function uses a fast language model and is more efficient than reading cards manually. You often want to filter for all hard criteria like legality and cost, then use `query_cards_with_llm` to find cards that match a more qualitative query."
+                    },
+                },
+                "required": ["reasoning", "is_finished", "python_code"]
+            }
+        }],
+        "tool_choice": {"type": "tool", "name": "build_deck"}
+    }
     decklist: game_state.DeckList = game_state.DeckList(mainboard={}, sideboard={})
     all_cards = game_state.card_database['data']
     review_round = 0
     while True:
         response = await log.llm_generate(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-20250514",
             messages=conversation,
             temperature=1,
             max_tokens=4000,
             **build_deck_tools
         )
-        print(json.dumps(response.choices[0].message.model_dump(exclude_none=True), indent=2))
-        conversation.append(response.choices[0].message.model_dump(exclude_none=True))
-        arguments = json.loads(response.choices[0].message.function_call.arguments)
+        print(json.dumps(response.choices[0].message.__dict__, indent=2))
+        conversation.append({
+            "role": "assistant",
+            "content": response.choices[0].message.content,
+            "tool_uses": response.choices[0].message.tool_uses
+        })
+        arguments = response.choices[0].message.tool_uses[0].input
         if arguments["is_finished"]:
             review = await review_decklist(decklist, request)
             if review_round >= review_rounds:
@@ -153,14 +158,14 @@ def get_all_cards_prompt():
     return "\n".join([prompting.format_card_full(card) for card in game_state.card_database['data'].keys()])
     
 
-async def filter_cards_model(cards:list[str], query:str, model='gpt-4o-mini') -> list[str]:
+async def filter_cards_model(cards:list[str], query:str, model='claude-sonnet-4-20250514') -> list[str]:
     print("filtering cards with model", model, len(cards), "cards", query)
     cards_prompt = "\n\n".join(cards)
     conversation = [
         {"role": "user", "content": f"Filter the following cards to only include cards that match the query: {query}\n\n{cards_prompt}\n\nPlease respond in json like {{thinking:string, cards:[string]}}, step by step thoughts followed by a list of only card names that match the query in order shown. Respond only in json with no surrounding text."}
     ]
     print(conversation[0]['content'])
-    response = await log.llm_generate(model=model, messages=conversation, response_format={ "type": "json_object" })
+    response = await log.llm_generate(model=model, messages=conversation)
     print(response.choices[0].message.content)
     return json.loads(response.choices[0].message.content)['cards']
 
@@ -232,7 +237,7 @@ Note: only suggest specific cards if they are well known to be strong, otherwise
     ]
 
     response = await log.llm_generate(
-        model="o1-preview",
+        model="claude-sonnet-4-20250514",
         messages=conversation,
     )
     print("Review Decklist Response:")
