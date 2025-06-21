@@ -8,9 +8,6 @@ I want it to operate in paper or online because i want to use it with friends, w
 
 I only play online in Arena and making Arena integration is likely against TOS and harder to show off to people.
 
-### For now
-
-Only openai, no anthropic
 
 ### Random things to try
 

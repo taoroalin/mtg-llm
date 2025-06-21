@@ -5,6 +5,30 @@ import re
 def simplify_mana_cost_fn(mana_cost:str):
     return re.sub(r'[{}]', '', mana_cost)
 
+def calculate_available_mana(player_board: game_state.PlayerBoard) -> dict[str, int]:
+    """Calculate available mana from untapped lands on the battlefield."""
+    mana = {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+    
+    for battlefield_card in player_board.battlefield.values():
+        if battlefield_card.tapped:
+            continue
+            
+        card_info = game_state.get_card_info(battlefield_card.card)
+        if "Land" not in card_info.get("types", []):
+            continue
+            
+        # Map basic land names to mana colors
+        land_to_mana = {
+            "Plains": "W", "Island": "U", "Swamp": "B", 
+            "Mountain": "R", "Forest": "G"
+        }
+        
+        mana_type = next((mana_type for land, mana_type in land_to_mana.items() 
+                         if land in battlefield_card.card), "C")
+        mana[mana_type] += 1
+    
+    return mana
+
 def format_card_full(card_name:game_state.Card, simplify_basic_lands:bool=False, simplify_mana_cost:bool=True, omit_all_reminder_text:bool=True):
     card = game_state.get_card_info(card_name)
     parts = []
@@ -68,7 +92,7 @@ def format_omniscient_view(game_state:game_state.GameState, simplify_basic_lands
     parts = []
     parts.append(f"Turn Number: {game_state.turn_number}")
     parts.append(f"Player {game_state.active_player_index}'s turn")
-    parts.append(f"Turn Step: {game_state.turn_step.name}")
+    parts.append(f"Turn Step: {game_state.turn_step}")
     for i, player_board in enumerate(game_state.player_boards):
         parts.append(f"Player {i}:")
         parts.append(f"Life: {player_board.life}")
@@ -95,10 +119,20 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
     parts = []
     parts.append(f"Turn Number: {game_state.turn_number}")
     parts.append(f"You are player {player_index}")
-    parts.append(f"Opponent {game_state.active_player_index}'s turn" if player_index != game_state.active_player_index else "It's your turn")
+    if player_index == game_state.active_player_index:
+        parts.append("It's your turn")
+    else:
+        parts.append(f"It's player {game_state.active_player_index}'s turn")
     parts.append(f"Turn Step: {game_state.turn_step.name}")
+    
+    # Show available mana for the active player
+    if player_index == game_state.active_player_index:
+        available_mana = calculate_available_mana(game_state.player_boards[player_index])
+        mana_summary = ", ".join([f"{color}: {count}" for color, count in available_mana.items() if count > 0])
+        parts.append(f"Available mana: {mana_summary if mana_summary else 'None'}")
+    
     for index, player_board in enumerate(game_state.player_boards):
-        parts.append(f"Opponent {index}'s board state:" if player_index != index else "Your board state:")
+        parts.append(f"Player {index}'s board state:" if player_index != index else "Your board state:")
         parts.append(f"Life: {player_board.life}")
         counters = [f"{name}: {count}" for name, count in player_board.counters.items()]
         if counters:
@@ -110,7 +144,7 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
                 parts.append(format_card_full(card, simplify_basic_lands))
                 parts.append("")
         else:
-            parts.append(f"Player has ({len(player_board.hand)}) cards in hand")
+            parts.append(f"Hand: {len(player_board.hand)} cards")
         parts.append(f"Battlefield ({len(player_board.battlefield)}) cards:" if player_board.battlefield else "Battlefield empty")
         for battlefield_card in player_board.battlefield_sorted:
             parts.append(format_battlefield_card(battlefield_card, simplify_basic_lands))
@@ -119,7 +153,7 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
         parts.append(f"Graveyard ({len(player_board.graveyard)}) cards: {', '.join(player_board.graveyard)}")
         if player_board.exile:
             parts.append(f"Exile ({len(player_board.exile)}) cards: {', '.join(player_board.exile)}")
-        parts.append(f"Current revealed information (eg scrying): {revealed_information}")
+    if revealed_information:
+        parts.append(f"Revealed information: {revealed_information}")
     parts.append(f"Starting player: {game_state.starting_player_index}")
     return '\n'.join(parts)
-    

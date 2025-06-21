@@ -15,7 +15,7 @@ const BoardContainer = styled.div`
 `;
 
 const Zone = styled.div`
-  margin: 10px 0;
+  margin: 5px;
 `;
 
 const Battlefield = styled.div`
@@ -31,7 +31,7 @@ const Hand = styled.div`
   min-height: ${CARD_HEIGHT}px;
   border: 2px solid rgba(0,0,0);
   border-radius: 8px;
-  padding: 8px;
+  padding: 4px;
   background: rgba(200, 200, 200, 0.7);
 `;
 

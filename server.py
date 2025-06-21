@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, Request, HTTPException
 from fastapi.responses import JSONResponse, Response, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Set
 import asyncio
 from contextlib import asynccontextmanager
@@ -14,6 +15,9 @@ from pathlib import Path
 import json
 
 app = FastAPI()
+
+# Mount static files for cached images
+app.mount("/cached-images", StaticFiles(directory="cache_images"), name="cached-images")
 
 class GameStateWebSocket:
     def __init__(self, game_id: str):
@@ -34,7 +38,10 @@ class GameStateWebSocket:
             deck_2 = game_state.DeckList.model_validate_json(f.read())
         new_state = game_state.GameState.init_from_decklists([deck_1, deck_2],arena_hand_smoothing=True)
         print(new_state.model_dump_json(indent=2))
-        new_agents = [agents.NaiveAgent(generation_settings=generation_settings), agents.NaiveAgent(generation_settings=generation_settings)]
+        new_agents = [
+            agents.NaiveAgent(generation_settings=generation_settings), 
+            agents.NaiveAgent(generation_settings=generation_settings)
+        ]
         self.game_master = GameMaster(game_id=game_id, game_state=new_state, agents=new_agents, generation_settings=generation_settings)
         
         asyncio.create_task(self.game_loop())
@@ -120,6 +127,10 @@ async def get_games():
 
 @app.websocket("/ws/{game_id}")
 async def websocket_endpoint(websocket: WebSocket, game_id: str):
+    if game_id not in games:
+        await websocket.close(code=1000, reason="Game not found")
+        return
+        
     game = games[game_id]
     await game.connect(websocket)
     try:
@@ -127,8 +138,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
             await websocket.receive_text()  # Keep connection alive
     except:
         await game.disconnect(websocket)
-        
-        
+
 @app.post("/create_game")
 @app.options("/create_game")
 async def create_game(request: Request):
@@ -156,5 +166,5 @@ async def get_playmat(game_id: str, player_index: str):
         raise HTTPException(status_code=404, detail="Game not found")
     decklist = game.game_state.player_decklists[int(player_index)]
     
-    image_url = await image_generation.generate_playmat_for_deck(decklist)
-    return RedirectResponse(url=image_url, status_code=303)
+    image_url_path = await image_generation.generate_playmat_for_deck(decklist)
+    return RedirectResponse(url=image_url_path, status_code=303)

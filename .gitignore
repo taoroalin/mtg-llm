@@ -4,3 +4,5 @@ __pycache__
 logs
 **/node_modules
 database
+cache
+cache_images

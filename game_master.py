@@ -34,7 +34,7 @@ def game_state_consistency(game_states: list[game_state.GameState]) -> tuple[Any
     jsons = [state.model_dump_json() for state in game_states]
     state_counts = {}
     for state_json in jsons:
-        state_counts[state_json] = state_counts.get(json, 0) + 1
+        state_counts[state_json] = state_counts.get(state_json, 0) + 1
     max_value = max(state_counts.items(), key=lambda x: x[1])[0]
     return game_states[jsons.index(max_value)], jsons.index(max_value)
     
@@ -124,7 +124,8 @@ class GameMaster(BaseModel):
         return player_action
         
     async def execute_action(self, action: str, consistency_n = 8):
-        execute_action_messages = self.get_base_messages()
+        execute_action_messages, system_content = self.get_base_messages()
+        execute_action_messages.insert(0, {"role": "system", "content": system_content})
         execute_action_messages.append({"role":"user", "content":f"Player validate whether the action player {self.priority_player} wants to take is valid. If it is, advance the game state according to the action.\nAction: {action}"})
         execute_action_tools = {
             "tools": [{
@@ -179,7 +180,8 @@ class GameMaster(BaseModel):
             return True, ""
                 
     async def advance_game_to_next_priority(self, consistency_n = 8):
-        advance_game_state_messages = self.get_base_messages()
+        advance_game_state_messages, system_content = self.get_base_messages()
+        advance_game_state_messages.insert(0, {"role": "system", "content": system_content})
     
         advance_state_tools = {
             "tools": [{
@@ -231,9 +233,10 @@ class GameMaster(BaseModel):
             return
         
     async def analyze_state_at_priority(self):
-        analyze_state_messages = self.get_base_messages()
+        analyze_state_messages, system_content = self.get_base_messages()
+        analyze_state_messages.insert(0, {"role": "system", "content": system_content})
         analyze_state_messages.append({"role":"user", "content":"Please analyze the current game state and describe what actions are available to the player who currently has priority."})
-        
+
         analyze_state_tools = {
             "tools": [{
                 "name": "extract_state_info",
@@ -311,15 +314,17 @@ class GameMaster(BaseModel):
         game_state_code = open("game_state.py").read()
         global_action_history = "\n".join([f"Player {action['player_index']}: {action['action']}" for action in self.global_action_history])
         used_python_code = "\n".join(self.used_python_code)
-        messages = [
-            {"role":"user", "content":"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API."""},{"role":"user", "content":f"""Game Phase reminder:
-{prompts.game_phase_guide}"""},
-            {"role":"user", "content":f"""
-The current game state is stored in python objects. Here is a text summary of the current game state:
+        
+        system_content = f"""You are an expert Magic: The Gathering judge. Your job is to enforce the rules of a Magic: The Gathering game played by two players who interact through natural language text. You track the state of the game using a Python API.
+
+Game Phase reminder:
+{prompts.game_phase_guide}
 
 Here are the python classes that hold the game state:
-{game_state_code}
-
+{game_state_code}"""
+        
+        messages = [
+            {"role":"user", "content":f"""
 Current Game State:
 {omniscient_view}"""},
             {"role":"user", "content":f"""
@@ -331,8 +336,8 @@ Here is all the python code that you have used to execute actions and advance ga
 {used_python_code}
 """},
         ]
-        return messages
-        
+        return messages, system_content
+
     async def execute_code_with_game_state(self, code: str, apply_changes: bool = True) -> tuple[bool, str, game_state.GameState]:
 
         f = io.StringIO()
