@@ -19,9 +19,8 @@ class NaiveAgent(game_master.AgentInterface):
     generation_settings: dict
 
     async def take_action(self,history:list[game_master.HistoryStep],visible_information: str, available_actions:str, rules_violation_feedback:Optional[str]=None) -> str:
+        system ="You are an expert Magic: The Gathering player. Your job is to win a game played over natural language with a text interface, talking to an expert judge who validates your actions and provides observations of the game state.\nHere are some of your notes to keep in mind:" + agent_advice
         messages = [
-            {"role":"system", "content":"You are an expert Magic: The Gathering player. Your job is to win a game played over natural language with a text interface, talking to an expert judge who validates your actions and provides observations of the game state."},
-            {"role":"system", "content":"Here are some of your notes to keep in mind:" + agent_advice},
             {"role":"user", "content":f"""
 Here is your history of past game states and actions:
 {history}
@@ -41,7 +40,8 @@ Please describe your action precisely, including how you pay costs and what you 
         
         response = await log.llm_generate(
             messages=messages,
+            system=system,
             **self.generation_settings
         )
-        action = response.choices[0].message.content
+        action = response['content'][0]['text']
         return action

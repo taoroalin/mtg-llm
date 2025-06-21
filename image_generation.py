@@ -23,7 +23,7 @@ async def get_image_prompt(decklist: DeckList) -> str:
         model="claude-sonnet-4-20250514",
         messages=[
             {
-                "role": "system",
+                "role": "user",
                 "content": "You are a creative director designing Magic: The Gathering playmats. Generate a detailed image prompt for Google's Imagen model based on the deck's cards and themes. Focus on visual elements, colors, atmosphere, and fantasy art style suitable for a playmat."
             },
             {
@@ -34,7 +34,7 @@ async def get_image_prompt(decklist: DeckList) -> str:
         temperature=0.7,
         no_cache=True
     )
-    image_prompt = prompt_response.choices[0].message.content
+    image_prompt = prompt_response['content'][0]['text']
     return image_prompt
     
 

@@ -125,7 +125,6 @@ class GameMaster(BaseModel):
         
     async def execute_action(self, action: str, consistency_n = 8):
         execute_action_messages, system_content = self.get_base_messages()
-        execute_action_messages.insert(0, {"role": "system", "content": system_content})
         execute_action_messages.append({"role":"user", "content":f"Player validate whether the action player {self.priority_player} wants to take is valid. If it is, advance the game state according to the action.\nAction: {action}"})
         execute_action_tools = {
             "tools": [{
@@ -159,10 +158,11 @@ class GameMaster(BaseModel):
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=execute_action_messages,
+                system=system_content,
                 **self.generation_settings,
                 **execute_action_tools
             )
-            choice_jsons = [tool_use.input for tool_use in response.choices[0].message.tool_uses]
+            choice_jsons = [tool_use['input'] for tool_use in response['content'] if tool_use['type'] == 'tool_use']
             majority_valid = consistency([choice["is_action_valid"] for choice in choice_jsons])[0]
             if not majority_valid:
                 return False, next(c["invalid_action_feedback"] for c in choice_jsons if c["invalid_action_feedback"])
@@ -181,7 +181,6 @@ class GameMaster(BaseModel):
                 
     async def advance_game_to_next_priority(self, consistency_n = 8):
         advance_game_state_messages, system_content = self.get_base_messages()
-        advance_game_state_messages.insert(0, {"role": "system", "content": system_content})
     
         advance_state_tools = {
             "tools": [{
@@ -213,11 +212,12 @@ class GameMaster(BaseModel):
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=advance_game_state_messages,
+                system=system_content,
                 **self.generation_settings,
                 **advance_state_tools
             )
             
-            choice_jsons = [tool_use.input for tool_use in response.choices[0].message.tool_uses]
+            choice_jsons = [tool_use['input'] for tool_use in response['content'] if tool_use['type'] == 'tool_use']
                 
             evaluation_results = [await self.execute_code_with_game_state(choice["python_code"], apply_changes=False) for choice in choice_jsons]
             if not any([result[0] for result in evaluation_results]):
@@ -234,7 +234,6 @@ class GameMaster(BaseModel):
         
     async def analyze_state_at_priority(self):
         analyze_state_messages, system_content = self.get_base_messages()
-        analyze_state_messages.insert(0, {"role": "system", "content": system_content})
         analyze_state_messages.append({"role":"user", "content":"Please analyze the current game state and describe what actions are available to the player who currently has priority."})
 
         analyze_state_tools = {
@@ -277,11 +276,12 @@ class GameMaster(BaseModel):
         for _ in range(self.n_retries):
             response = await log.llm_generate(
                 messages=analyze_state_messages,
+                system=system_content,
                 **self.generation_settings,
                 **analyze_state_tools
             )
             
-            result = response.choices[0].message.tool_uses[0].input
+            result = response['content'][0]['input']
             required_fields = ["reasoning", "priority_player", "priority_player_revealed_information", "priority_player_available_mana", "priority_player_available_actions", "winner"]
             if not all(field in result for field in required_fields):
                 analyze_state_messages.append({"role":"user", "content":f"The response is missing required fields. Please include all of: {required_fields}"})

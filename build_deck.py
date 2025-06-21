@@ -54,11 +54,7 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
     decklist_code = inspect.getsource(game_state.DeckList)
     card_info_code = inspect.getsource(game_state.CardInfo)
 
-    conversation = [
-        {
-            "role": "system",
-            "content": (
-                "You create Magic: The Gathering decks based on user requests."
+    system_message = (                "You create Magic: The Gathering decks based on user requests."
                 " You have access to `all_cards`, a dictionary of card names to card information."
                 " and `decklist`, a `DeckList` object."
                 " Iteratively update `decklist` to add cards to the deck."
@@ -72,9 +68,8 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
                 " A strong mana base, including the best nonbasic lands legal in the format unless otherwise specified."
                 " Cards that distrupt your opponent's game plan. These could be counterspells, removal, discard, etc. The most agressive decks don't need this."
                 " A good mana curve / opening plan. You want to have good plays on early turns that set up your win condition."
-                "If a format is specified, filter cards for legality in that format."
-            ),
-        },
+                "If a format is specified, filter cards for legality in that format.")
+    conversation = [
         {
             "role": "user",
             "content": f"Create a deck according to: '{request}'",
@@ -113,17 +108,22 @@ async def generate_deck_from_request(request: str, review_rounds: int = 3) -> di
         response = await log.llm_generate(
             model="claude-sonnet-4-20250514",
             messages=conversation,
+            system=system_message,
             temperature=1,
             max_tokens=4000,
             **build_deck_tools
         )
-        print(json.dumps(response.choices[0].message.__dict__, indent=2))
+        print(json.dumps(response, indent=2))
+        
+        # Extract tool use from Anthropic format
+        tool_use = next(block for block in response['content'] if block['type'] == 'tool_use')
+        
         conversation.append({
             "role": "assistant",
-            "content": response.choices[0].message.content,
-            "tool_uses": response.choices[0].message.tool_uses
+            "content": response['content']
         })
-        arguments = response.choices[0].message.tool_uses[0].input
+        arguments = tool_use['input']
+
         if arguments["is_finished"]:
             review = await review_decklist(decklist, request)
             if review_round >= review_rounds:
@@ -165,8 +165,8 @@ async def filter_cards_model(cards:list[str], query:str, model='claude-sonnet-4-
     ]
     print(conversation[0]['content'])
     response = await log.llm_generate(model=model, messages=conversation)
-    print(response.choices[0].message.content)
-    return json.loads(response.choices[0].message.content)['cards']
+    print(response['content'][0]['text'])
+    return json.loads(response['content'][0]['text'])['cards']
 
 async def query_cards_with_llm(query:str, card_names:list[str])->list[str]:
     prompts = [prompting.format_card_full(card) for card in card_names]
@@ -250,8 +250,8 @@ Note: only suggest specific cards if they are well known to be strong, otherwise
         messages=conversation,
     )
     print("Review Decklist Response:")
-    print(response.choices[0].message.content)
-    return response.choices[0].message.content
+    print(response['content'][0]['text'])
+    return response['content'][0]['text']
 
 if __name__ == "__main__":
     # print(len(game_state.card_database['data']), len(get_all_cards_prompt())) # 30813 6200714
