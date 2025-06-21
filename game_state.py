@@ -17,7 +17,6 @@ class CardInfo(TypedDict, total=False):
     manaValue: int
     
     colors: List[str]
-    colorIdentity: List[str]
     types: List[str]
     subtypes: List[str]
     supertypes: List[str]
@@ -28,9 +27,12 @@ class CardInfo(TypedDict, total=False):
     
     text: str
     
+    isToken: bool
+    
+    # for deckbuilding only
+    colorIdentity: List[str]
     number: str
     legalities:Optional[list[str]] # list of lowercase format names
-    isToken: bool
     
 def card_fill_missing_fields(card_info:CardInfo):
     if not card_info.get('manaValue'):

@@ -1,4 +1,4 @@
-pip install -r requirements.txt
+uv sync
 mkdir assets
 cd assets
 [ ! -f AtomicCards.json ] && wget https://mtgjson.com/api/v5/AtomicCards.json
@@ -10,4 +10,4 @@ for deck in Cats Elves Goblins Healing Inferno Pirates; do
 done
 cd ..
 cd ..
-python process_assets.py
+uv run python process_assets.py
