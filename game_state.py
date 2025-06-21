@@ -79,6 +79,7 @@ class TurnStep(str, Enum):
     END = "END"
     CLEANUP = "CLEANUP"
 
+
 class DeckList(BaseModel):
     "Decklist for a player at the beginning of the game. Mapping from card name to count."
     mainboard: dict[Card, int] # card name to count

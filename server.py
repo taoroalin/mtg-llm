@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, Request, HTTPException
 from fastapi.responses import JSONResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Set
-import asyncio
+import trio
 from contextlib import asynccontextmanager
 from game_master import GameMaster
 import game_state
@@ -13,8 +13,15 @@ import os
 import uuid
 from pathlib import Path
 import json
+import anyio
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with anyio.create_task_group() as task_group:
+        app.state.task_group = task_group
+        yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Mount static files for cached images
 app.mount("/cached-images", StaticFiles(directory="cache_images"), name="cached-images")
@@ -44,7 +51,6 @@ class GameStateWebSocket:
         ]
         self.game_master = GameMaster(game_id=game_id, game_state=new_state, agents=new_agents, generation_settings=generation_settings)
         
-        asyncio.create_task(self.game_loop())
         self.n_steps_since_last_broadcast = 0
         self.is_killed = False
         
@@ -150,7 +156,12 @@ async def create_game(request: Request):
         return response
         
     game_id = str(uuid.uuid4())
-    games[game_id] = GameStateWebSocket(game_id=game_id)
+    game = GameStateWebSocket(game_id=game_id)
+    games[game_id] = game
+    
+    # Start the game loop in the background using the global task group
+    request.app.state.task_group.start_soon(game.game_loop)
+    
     response = JSONResponse(content={"game_id": game_id})
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "*" 

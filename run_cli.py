@@ -1,7 +1,8 @@
 from game_state import GameState, DeckList
 from agents import NaiveAgent
 from game_master import GameMaster
-import asyncio
+import trio
+import anyio
 from dotenv import load_dotenv
 import uuid
 load_dotenv()
@@ -23,5 +24,5 @@ if __name__ == "__main__":
     ]
     game_id = str(uuid.uuid4())
     game_master = GameMaster(game_id=game_id, game_state=game_state, agents=agents, generation_settings=generation_settings)
-    winner = asyncio.run(game_master.game_loop())
+    winner = anyio.run(game_master.game_loop)
     print(f"Player {winner} wins!")

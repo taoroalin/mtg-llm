@@ -123,7 +123,7 @@ def format_player_view(game_state:game_state.GameState, player_index:int, reveal
         parts.append("It's your turn")
     else:
         parts.append(f"It's player {game_state.active_player_index}'s turn")
-    parts.append(f"Turn Step: {game_state.turn_step.name}")
+    parts.append(f"Turn Step: {game_state.turn_step}")
     
     # Show available mana for the active player
     if player_index == game_state.active_player_index:

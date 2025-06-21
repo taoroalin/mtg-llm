@@ -2,9 +2,10 @@ import anthropic
 import os
 import json
 from datetime import datetime
-import asyncio
+import trio
 import random
 import hashlib
+import anyio
 
 logging_dir = 'logs'
 cache_dir = 'cache'
@@ -140,7 +141,7 @@ async def llm_generate(**kwargs):
                 # Exponential backoff with jitter
                 delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
                 print(f"Rate limit hit, retrying in {delay:.2f}s (attempt {attempt + 1}/{max_retries + 1})")
-                await asyncio.sleep(delay)
+                await anyio.sleep(delay)
                 continue
             else:
                 # Re-raise the exception if it's not a rate limit or we've exhausted retries

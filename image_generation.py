@@ -8,7 +8,7 @@ from google.genai import types
 from PIL import Image
 from io import BytesIO
 import trio
-import asyncio
+import anyio
 
 # Create cache directory for images
 cache_images_dir = 'cache_images'
@@ -77,4 +77,4 @@ async def main():
     await generate_playmat_for_deck(decklist)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    anyio.run(main)

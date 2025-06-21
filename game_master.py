@@ -9,7 +9,7 @@ from contextlib import redirect_stdout
 from copy import deepcopy
 import traceback
 import log
-import asyncio
+import trio
 import uuid
 
 class HistoryStep(BaseModel):

@@ -4,14 +4,13 @@ import inspect
 import json
 import io
 import contextlib
-import asyncio
+import trio
 import os
 import prompting
+import anyio
 from typing import Callable
 from pydantic import BaseModel
-import nest_asyncio
 
-nest_asyncio.apply()
 
 def compute_decklist_stats(decklist: game_state.DeckList) -> dict:
     total_cards = sum(decklist.mainboard.values())
@@ -189,10 +188,20 @@ async def query_cards_with_llm(query:str, card_names:list[str])->list[str]:
     if current_batch:
         batches.append(current_batch)
     print("filtering cards in ", len(batches), " batches")
-    return [item for batch in await asyncio.gather(*[filter_cards_model(batch, query) for batch in batches]) for item in batch]
     
+    results = []
+    async with anyio.create_task_group() as task_group:
+        async def collect_result(batch):
+            result = await filter_cards_model(batch, query)
+            results.append(result)
+        
+        for batch in batches:
+            task_group.start_soon(collect_result, batch)
+    
+    return [item for batch in results for item in batch]
+
 def query_cards_with_llm_sync(query:str, card_names:list[str])->list[str]:
-    return asyncio.run(query_cards_with_llm(query, card_names))
+    return anyio.run(query_cards_with_llm, query, card_names)
     
 async def review_decklist(decklist: game_state.DeckList, request: str) -> str:
     card_details = "\n".join([prompting.format_card_full(card) for card in decklist.mainboard.keys()])
@@ -247,12 +256,12 @@ Note: only suggest specific cards if they are well known to be strong, otherwise
 if __name__ == "__main__":
     # print(len(game_state.card_database['data']), len(get_all_cards_prompt())) # 30813 6200714
     # bear_filter = lambda card: 'Bear' in card['subtypes']
-    # queried_names = asyncio.run(query_cards("Find all cards that might be played in a power level 7 EDH deck", bear_filter))
+    # queried_names = trio.run(query_cards, "Find all cards that might be played in a power level 7 EDH deck", bear_filter)
     # for name in queried_names:
     #     print(prompting.format_card_full(name))
     # exit()
 
-    decklist = asyncio.run(generate_deck_from_request("Please make a Standard legal izzet Otter themed deck for q4 2024"))
+    decklist = anyio.run(generate_deck_from_request, "Please make a Standard legal izzet Otter themed deck for q4 2024")
     print(decklist) 
     print(compute_decklist_stats(decklist))
     os.makedirs("assets/built_decks", exist_ok=True)

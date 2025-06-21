@@ -2,10 +2,11 @@ from collections import defaultdict
 from game_state import GameState, DeckList
 from agents import NaiveAgent
 from game_master import GameMaster
-import asyncio
+import trio
 from dotenv import load_dotenv
 import json
 from pathlib import Path
+import anyio
 
 import uuid
 load_dotenv()
@@ -25,11 +26,19 @@ if __name__ == "__main__":
     game_state = GameState.init_mirror(boros_energy_deck)
     agents = [NaiveAgent(generation_settings=generation_settings_1), NaiveAgent(generation_settings=generation_settings_2)]
     game_masters = [GameMaster(game_id=str(uuid.uuid4()), game_state=game_state, agents=agents, generation_settings=generation_settings_1) for _ in range(n_runs)]
+    
     async def run_games():
-        games = [game_master.game_loop() for game_master in game_masters]
-        return await asyncio.gather(*games)
+        results = []
+        async with anyio.create_task_group() as task_group:
+            async def collect_result(game_master):
+                result = await game_master.game_loop()
+                results.append(result)
+            
+            for game_master in game_masters:
+                task_group.start_soon(collect_result, game_master)
+        return results
         
-    winners = asyncio.run(run_games())
+    winners = anyio.run(run_games)
     print(f"Winners: {winners}")
     
     finished_games = Path("database/finished_games").glob("*.json")

@@ -2,5 +2,7 @@ pydantic
 anthropic>=0.18.0
 python-dotenv
 google-genai
+anyio[trio]
+trio
 # stuff for low quality web app made by llms :(
 fastapi
